@@ -1,0 +1,1492 @@
+# COMPREHENSIVE SYSTEM ANALYSIS - FAMILY POOL SERVICE V2
+
+## EXECUTIVE SUMMARY
+This Laravel application is a pool service management system built with **Filament v3** admin panel, **Laravel Jetstream**, and **Spatie Laravel Permission** for role-based access control. The system manages clients, service requests, task assignments, job applications, messages, and company information with visitor tracking capabilities.
+
+---
+
+## 1. DATABASE SCHEMA
+
+### Complete Table Structure with Relationships
+
+#### **users** Table
+```php
+Columns:
+- id (bigint, primary key)
+- name (string, indexed)
+- email (string, unique)
+- profile_photo_path (string, default: "profile-photos/profile.jpg")
+- email_verified_at (timestamp, nullable)
+- nationality (string, indexed, nullable)
+- city (string, indexed, nullable)
+- state (string, indexed, nullable)
+- street (string, indexed, nullable)
+- phone (string, indexed, nullable)
+- password (string)
+- team_member (boolean, default: 0)
+- role (string, default: 'User')
+- remember_token
+- current_team_id (foreign key, nullable)
+- two_factor_secret (text, nullable)
+- two_factor_recovery_codes (text, nullable)
+- two_factor_confirmed_at (timestamp, nullable)
+- created_at, updated_at
+- deleted_at (soft deletes)
+
+Relationships:
+- hasMany: messages (Message)
+- hasMany: serviceAssignment (ServiceRequest via user_id)
+- hasMany: clients (Client)
+- hasMany: requests (ServiceRequest via client_id)
+- hasMany: tasks (Task via user_id)
+```
+
+#### **permissions** Table (Spatie)
+```php
+Columns:
+- id (bigint, primary key)
+- name (string, unique with guard_name)
+- guard_name (string)
+- created_at, updated_at
+- deleted_at (soft deletes)
+```
+
+#### **roles** Table (Spatie)
+```php
+Columns:
+- id (bigint, primary key)
+- name (string, unique with guard_name)
+- guard_name (string)
+- created_at, updated_at
+
+Relationships:
+- belongsToMany: permissions (via role_has_permissions pivot)
+```
+
+#### **model_has_permissions** Table
+```php
+Pivot table:
+- permission_id (foreign key to permissions)
+- model_type (string - polymorphic)
+- model_morph_key (bigint - polymorphic)
+```
+
+#### **model_has_roles** Table
+```php
+Pivot table:
+- role_id (foreign key to roles)
+- model_type (string - polymorphic)
+- model_morph_key (bigint - polymorphic)
+```
+
+#### **role_has_permissions** Table
+```php
+Pivot table:
+- permission_id (foreign key to permissions)
+- role_id (foreign key to roles)
+```
+
+#### **client_categories** Table
+```php
+Columns:
+- id (bigint, primary key)
+- category (string, indexed)
+- created_at, updated_at
+- deleted_at (soft deletes)
+
+Relationships:
+- hasMany: categories (Client via client_category_id)
+
+Predefined Categories:
+1. Un Categorized
+2. Bi-weekly service
+3. Weekly service
+4. Monthly service
+```
+
+#### **clients** Table
+```php
+Columns:
+- id (bigint, primary key)
+- client_category_id (foreign key to client_categories, cascade on delete)
+- name (string, nullable)
+- email (string, nullable)
+- nationality (string, nullable)
+- city (string, nullable)
+- state (string, nullable)
+- street (string, nullable)
+- phone (string, nullable)
+- zip (string, nullable)
+- active (boolean, default: 0)
+- created_at, updated_at
+- deleted_at (soft deletes)
+
+Relationships:
+- belongsTo: category (ClientCategory)
+- hasMany: requests (ServiceRequest)
+- hasMany: messages (Message)
+```
+
+#### **service_requests** Table
+```php
+Columns:
+- id (bigint, primary key)
+- assigned (boolean, default: 0)
+- name (string, indexed)
+- email (string, indexed)
+- zip (string, indexed)
+- phone (string, indexed)
+- service (string, indexed)
+- description (string, max 1500)
+- created_at, updated_at
+- deleted_at (soft deletes)
+
+Relationships:
+- belongsTo: techAssign (User via user_id)
+- hasMany: tasks (Task)
+```
+
+#### **tasks** Table
+```php
+Columns:
+- id (bigint, primary key)
+- service_request_id (foreign key to service_requests, cascade)
+- user_id (foreign key to users, cascade)
+- status (boolean, default: 0)
+- comments (string, default: "Not Performed")
+- created_at, updated_at
+- deleted_at (soft deletes)
+
+Relationships:
+- belongsTo: serviceTask (ServiceRequest)
+- belongsTo: userTask (User)
+- hasMany: assignedtasks (AssignedTasks)
+
+Auto-Behavior:
+- Dispatches MarkTaskOverdue job 3 minutes after creation
+- Job marks task as "Overdue" if comments still "Not Performed"
+```
+
+#### **assigned_tasks** Table
+```php
+Columns:
+- id (bigint, primary key)
+- task_id (foreign key to tasks, cascade)
+- feedback (text, nullable)
+- image_before (string, nullable)
+- image_after (string, nullable)
+- created_at, updated_at
+- deleted_at (soft deletes)
+
+Relationships:
+- belongsTo: taskAssigned (Task)
+```
+
+#### **messages** Table
+```php
+Columns:
+- id (bigint, primary key)
+- name (string)
+- email (string)
+- subject (string)
+- message (string, max 3000)
+- created_at, updated_at
+- deleted_at (soft deletes)
+
+No explicit relationships in model
+```
+
+#### **job_applicants** Table
+```php
+Columns:
+- id (bigint, primary key)
+- name (string, indexed, foreign key to users.name, cascade)
+- email (string, unique, foreign key to users.email, cascade)
+- nationality (string, indexed, foreign key to users.nationality, cascade)
+- city (string, indexed, foreign key to users.city, cascade)
+- state (string, indexed, foreign key to users.state, cascade)
+- street (string, indexed, foreign key to users.street, cascade)
+- phone (string, indexed, foreign key to users.phone, cascade)
+- zip (string, indexed, nullable)
+- age (string, indexed, nullable)
+- birthdate (string, indexed, nullable)
+- socialsecurity (string, indexed, nullable)
+- socialsecurityNumber (string, indexed, nullable, default: 'NULL')
+- einNumber (string, indexed, nullable, default: 'NULL')
+- days (string, indexed, nullable) - JSON encoded
+- starttime (string, indexed, nullable)
+- endtime (string, indexed, nullable)
+- startdate (string, indexed, nullable)
+- workperiod (string, indexed, nullable)
+- workHours (string, indexed, nullable)
+- smoke (string, indexed, nullable)
+- licence (string, indexed, nullable)
+- licenceNumber (string, indexed, nullable, default: 'NULL')
+- issueddate (string, indexed, nullable, default: 'NULL')
+- expiredate (string, indexed, nullable, default: 'NULL')
+- issuedcity (string, indexed, nullable, default: 'NULL')
+- transport (string, indexed, nullable)
+- hire (boolean, default: 0)
+- created_at, updated_at
+- deleted_at (soft deletes)
+```
+
+#### **galleries** Table
+```php
+Columns:
+- id (bigint, primary key)
+- image_path (string)
+- created_at, updated_at
+- deleted_at (soft deletes)
+```
+
+#### **pop_ups** Table
+```php
+Columns:
+- id (bigint, primary key)
+- head (string)
+- body (string)
+- action (string)
+- page_to_display (string)
+- created_at, updated_at
+- deleted_at (soft deletes)
+```
+
+#### **company_infos** Table
+```php
+Columns:
+- id (bigint, primary key)
+- phone (string)
+- email_one (string)
+- email_two (string)
+- address (string)
+- city (string)
+- country (string)
+- created_at, updated_at
+- deleted_at (soft deletes)
+```
+
+#### **social_networks** Table
+```php
+Columns:
+- id (bigint, primary key)
+- name (string)
+- link (string)
+- icon (string)
+- created_at, updated_at
+- deleted_at (soft deletes)
+```
+
+#### **abouts** Table
+```php
+Columns:
+- id (bigint, primary key)
+- about_us (string, max 2500)
+- created_at, updated_at
+- deleted_at (soft deletes)
+```
+
+#### **visitors** Table
+```php
+Columns:
+- id (bigint, primary key)
+- method (string, nullable)
+- request (mediumtext, nullable, default: 0)
+- url (mediumtext, nullable)
+- referer (mediumtext, nullable)
+- languages (text, nullable)
+- useragent (text, nullable)
+- headers (text, nullable)
+- device (text, nullable)
+- platform (text, nullable)
+- browser (text, nullable)
+- ip (ipAddress, nullable)
+- visitable_type (string, nullable, polymorphic)
+- visitable_id (bigint, nullable, polymorphic)
+- visitor_type (string, nullable, polymorphic)
+- visitor_id (bigint, nullable, polymorphic)
+- created_at, updated_at
+- deleted_at (soft deletes)
+
+Unique: [created_at, ip]
+```
+
+#### **Other System Tables**
+- password_reset_tokens
+- personal_access_tokens (Sanctum)
+- failed_jobs
+- sessions
+- notifications (Laravel notifications)
+- visits (shetabit/visitor package)
+- filament_email_log (email logging)
+- jobs (queue jobs)
+
+---
+
+## 2. ROLE-BASED ACCESS CONTROL (RBAC)
+
+### Roles & Permissions Structure
+
+#### **Predefined Roles:**
+1. **Administrator** (Company IT)
+   - Full system access
+   - Can access Filament panel
+   - Manage all resources
+
+2. **Manager**
+   - Can access Filament panel
+   - View/manage clients
+   - View/manage service requests
+   - Create/assign/view tasks
+   - View all users
+
+3. **Technician**
+   - Can access Filament panel
+   - View assigned tasks only
+   - Complete assigned tasks
+   - Create assigned task reports
+
+4. **User** (Default)
+   - No admin panel access
+   - Can apply for jobs
+   - Can request services
+
+#### **Predefined Permissions:**
+- View Any
+- Edit About
+- Delete Any
+- Restore
+- Manager (role permission)
+- Technician Permission
+- IT Permission
+
+### Access Control Implementation
+
+**User Model Methods:**
+```php
+public function canAccessPanel(Panel $panel): bool
+{
+    return $this->hasRole(['Manager', 'Technician', 'Administrator']);
+}
+
+public function isIT(): bool
+{
+    return $this->hasRole(['Administrator']);
+}
+
+public function isTechnician(): bool
+{
+    return $this->hasRole(['Technician']);
+}
+
+public function isManager(): bool
+{
+    return $this->hasRole(['Manager', 'Administrator']);
+}
+```
+
+### Policy-Based Authorization
+
+#### **ClientPolicy:**
+- All CRUD operations require 'Manager' permission
+- Uses `hasPermissionTo('Manager')` check
+
+#### **ServiceRequestPolicy:**
+- All CRUD operations require 'Manager' permission
+
+#### **TaskPolicy:**
+- Only managers can create/update/delete tasks
+- View access for all authenticated users
+- Technicians can only view their assigned tasks (filtered in Eloquent query)
+
+#### **Resource Query Scoping:**
+
+**UserResource:**
+```php
+// Managers see all users, others see only themselves
+if ($user->isManager()) {
+    return $query;
+} else {
+    return $query->where("id", $user->id);
+}
+```
+
+**TaskResource:**
+```php
+// Managers see all tasks, technicians see only their tasks
+if ($user->isManager()) {
+    return $query;
+} else {
+    return $query->where("user_id", $user->id);
+}
+```
+
+---
+
+## 3. ROUTES STRUCTURE
+
+### Web Routes (`routes/web.php`)
+
+#### **Public Routes:**
+```php
+GET  /                          - Homepage (with visitor tracking)
+GET  /service                   - Service listing page
+GET  /gallery                   - Gallery page
+GET  /about                     - About page
+GET  /category                  - Service categories
+GET  /contact                   - Contact page
+GET  /service-request           - Service request form (askservice)
+POST /request                   - Submit service request
+POST /send                      - Send contact message
+```
+
+#### **Authenticated Routes:**
+```php
+Middleware: auth:sanctum, jetstream.auth_session, verified
+
+GET  /dashboard                 - User dashboard
+GET  /apply                     - Job application form (apply)
+POST /apply_job                 - Submit job application
+
+Resource Routes:
+- /messages                     - JetEmails controller (user's messages)
+- /myservices                   - JetService controller (user's service requests)
+- /reply                        - EmailReply controller (email replies)
+```
+
+#### **PDF/Print Routes:**
+```php
+GET /pdf/{record}               - PdfController (Client PDF)
+GET /pdf/e/{record}             - PdfServiceGen (ServiceRequest PDF)
+```
+
+#### **API Routes:**
+```php
+GET /api/user                   - Get authenticated user (Sanctum)
+```
+
+---
+
+## 4. CONTROLLERS & BUSINESS LOGIC
+
+### **ServiceRequestController**
+**Location:** `/home/kingsman/Projects/familypool-V2/app/Http/Controllers/ServiceRequestController.php`
+
+**Purpose:** Handle service request submissions from website
+
+**Key Method: `request(Request $request)`**
+```php
+Validation:
+- name: required|string|min:5|max:50
+- zip: required
+- email: required|email|min:5|max:50
+- phone: required|string|min:5|max:50
+- service: required
+- description: required|string|min:10
+
+Process:
+1. Validate request data
+2. Create ServiceRequest record
+3. Send email to company (familypoolservice2020@gmail.com)
+   - ServiceSent mail class
+4. Send confirmation email to customer
+   - ServiceReply mail class
+5. Flash success message
+6. Redirect to homepage
+
+Database Transaction: Yes (using DB::beginTransaction/commit)
+```
+
+### **MessageController**
+**Location:** `/home/kingsman/Projects/familypool-V2/app/Http/Controllers/MessageController.php`
+
+**Key Method: `message(Request $request)`**
+```php
+Validation:
+- name: required|string|max:30
+- subject: required|string|max:255|min:2
+- email: required|email|max:255
+- message: required|string|max:1000|min:3
+
+Process:
+1. Validate input
+2. Create Message record
+3. Send email to company (MessageSent)
+4. Send confirmation to customer (MessageReceived)
+5. Flash success message
+6. Redirect to homepage
+
+Error Handling: Try-catch with DB rollback
+```
+
+### **JobApplicantsController**
+**Location:** `/home/kingsman/Projects/familypool-V2/app/Http/Controllers/JobApplicantsController.php`
+
+**Key Method: `apply_job(Request $request)`**
+```php
+Authentication Required: Yes
+
+Validation (Complex):
+- Personal Info: name, email, nationality, city, state, street, phone, zip
+- Age Info: gender (Male/Female), age (18-45), birthdate
+- Work Details:
+  - days: array|min:2|max:6 (working days)
+  - starttime, endtime: required
+  - startdate: date
+  - workperiod: integer|between:3,12 (months)
+  - workHours: integer|between:30,170
+- Security: socialsecurity (SSN or EIN), SSN/EIN numbers (unique)
+- License: licence (yes/no), licenceNumber, dates, city
+- Other: smoke, transport
+
+Process:
+1. Check authentication
+2. Validate extensive application data
+3. Save job application (days saved as JSON)
+4. Send email to company (JobSent)
+5. Send confirmation to applicant (JobReceived)
+6. Flash success message
+7. Redirect to homepage
+
+Special Features:
+- Days of work stored as JSON array
+- Conditional validation based on licence/social security type
+```
+
+### **PagesController**
+**Location:** `/home/kingsman/Projects/familypool-V2/app/Http/Controllers/PagesController.php`
+
+**Purpose:** Render public-facing pages with common data
+
+**Methods:**
+```php
+service()       - Service page
+categories()    - Service categories
+about()         - About page
+contact()       - Contact page
+gallery()       - Gallery with images
+apply()         - Job application form
+askservice()    - Service request form
+
+Common Data Passed:
+- $data['abouts'] = About::all()
+- $data['socialnetwork'] = SocialNetwork::all()
+- $data['infos'] = CompanyInfo::all()
+- $data['popups'] = PopUp::all() (where applicable)
+```
+
+### **PDF/Print Controllers**
+
+#### **PdfController**
+```php
+Purpose: Generate PDF for Client records
+Method: __invoke(Client $record)
+Output: PDF download with client information
+View: /site/pdf/customer
+Package: barryvdh/laravel-dompdf
+```
+
+#### **PdfServiceGen**
+```php
+Purpose: Generate PDF for ServiceRequest records
+Method: __invoke(ServiceRequest $record)
+Output: PDF download with service request details
+View: /site/pdf/customer
+```
+
+### **Jetstream Controllers**
+
+#### **JetEmails**
+```php
+Purpose: User's personal messages
+Methods:
+- index(): List user's messages (paginated)
+- show($id): View single message
+Scope: Only messages where user_id = Auth::user()->id
+```
+
+#### **JetService**
+```php
+Purpose: User's service requests
+Methods:
+- index(): List user's service requests (paginated)
+Scope: Only requests where client_id = Auth::user()->id
+```
+
+#### **EmailReply**
+```php
+Purpose: Admin view all messages
+Methods:
+- index(): List all messages (paginated)
+- show($id): View message
+```
+
+---
+
+## 5. FILAMENT ADMIN PANEL
+
+### Panel Configuration
+**Location:** `/home/kingsman/Projects/familypool-V2/app/Providers/Filament/AdminPanelProvider.php`
+
+```php
+Panel Settings:
+- ID: admin
+- Path: /admin
+- Favicon: /storage/images/logo/logo.svg
+- Font: Rubik
+- Login: Enabled
+- Colors: Blue (primary), Red, Orange, Green
+- Sidebar: Collapsible on desktop
+
+Widgets:
+- AccountWidget
+- StatsOverView (custom)
+- Auto-discovers widgets in app/Filament/Widgets
+
+Resources: Auto-discovered in app/Filament/Resources
+Pages: Auto-discovered in app/Filament/Pages
+```
+
+### Filament Resources
+
+#### **Navigation Groups:**
+1. **System**
+   - Users (UserResource)
+   - Clients (ClientResource)
+   - Job Applicants (JobApplicantsResource)
+
+2. **Services & Tasks**
+   - Service Requests (ServiceRequestResource)
+   - Tasks (TaskResource)
+   - Assigned Tasks (AssignedTasksResource)
+
+3. **Media**
+   - Gallery (GalleryResource)
+   - Messages (MessageResource)
+
+4. **Company**
+   - Client Categories (ClientCategoryResource)
+   - About (AboutResource)
+   - Company Info (CompanyInfoResource)
+   - Social Networks (SocialNetworkResource)
+   - Pop Ups (PopUpResource)
+
+5. **Authentic** (Authentication)
+   - Roles (RoleResource)
+   - Permissions (PermissionResource)
+
+6. **System Management**
+   - Visitors (VisitorResource)
+
+### Key Filament Resource Features
+
+#### **UserResource**
+```php
+Navigation Badge: User count (for managers only)
+Form Fields:
+- Personal: name, email, password, nationality, city, state, street, phone
+- Role selection (with relationship to roles table)
+- Team member toggle
+- Profile photo upload (resized to 500x500, webp format)
+
+Table Columns:
+- Profile photo (circular)
+- Name, email, role, team_member
+- Created/updated dates
+
+Special Features:
+- Password auto-hashed on save
+- Role synchronized with roles relationship
+- Managers see all users, others see only themselves
+- Soft deletes enabled
+```
+
+#### **ClientResource**
+```php
+Navigation Badge: Client count
+Form Fields:
+- name, email, phone, zip
+- client_category_id (select from categories)
+- nationality, city, state, street
+- active (toggle)
+
+Table Features:
+- Category relationship display
+- Active status icon
+- Filterable by category (1-4)
+- PDF print action (route: 'pdf')
+- Action group: View, Edit, Delete
+
+Special Features:
+- Auto-fills service request form with client data
+- Print functionality generates PDF
+- Soft deletes enabled
+```
+
+#### **ServiceRequestResource**
+```php
+Navigation Badge: Service request count
+Form Features:
+- Client selection (from active clients only)
+- Auto-populates email, zip, phone from selected client
+- Service description (RichEditor)
+- Description field (RichEditor, max 1500 chars)
+
+Table Features:
+- Assigned status icon
+- Service column (HTML rendering)
+- Print action (route: 'pdfGen')
+- Searchable: name, service, zip, phone
+
+Special Behavior:
+- Only shows active clients in dropdown
+- Live updates form fields on client selection
+```
+
+#### **TaskResource**
+```php
+Navigation Badge: Task count (managers only)
+Form Features:
+- Service request selection (only unassigned requests)
+- User/technician selection
+- Status toggle (disabled)
+- Comments field (read-only, default: "Not Performed")
+
+Table Features:
+- Technician name (userTask relationship)
+- Client name (serviceTask relationship)
+- Zip address
+- Status icon
+- Comments with color coding:
+  - Orange: "Not Performed"
+  - Red: "Overdue"
+  - Green: Other statuses
+
+Query Scoping:
+- Managers: See all tasks
+- Technicians: See only their tasks (user_id filter)
+
+Special Features:
+- Prevents duplicate task assignments
+- Uses JOIN to exclude already assigned service requests
+```
+
+#### **AssignedTasksResource**
+```php
+Purpose: Technicians complete tasks with feedback and photos
+
+Form Features:
+- Task selection (only unassigned tasks for current user)
+- Auto-populates client info from task
+- Feedback (RichEditor, required)
+- image_before (required, resized, webp format)
+- image_after (required, resized, webp format)
+
+Special Features:
+- Only shows tasks assigned to current user
+- Task can only be marked complete once
+- Images stored in separate directories (image_before/, image_aftre/)
+```
+
+#### **MessageResource**
+```php
+Navigation Badge: Message count
+Form Fields: name, email, subject, message (RichEditor)
+
+Table Features:
+- Copyable email with toast notification
+- Icons for name and email
+- Reply action with form:
+  - Email, subject, body (RichEditor)
+  - Sends CustomerEmailReply mail
+- Default sort: created_at DESC
+
+Special Features:
+- In-line reply functionality
+- Email copy feature
+- Soft deletes
+```
+
+#### **JobApplicantsResource**
+```php
+Navigation Badge: Applicant count
+Form: All fields read-only (view only)
+Fields Include:
+- Personal info, contact details
+- Work preferences, schedule
+- Social security/EIN details
+- License information
+- Hire toggle (only editable field)
+
+Table Filters:
+- Trashed filter
+- "Hired" filter (hire = true)
+
+Special Feature:
+- Hire toggle updates user's team_member status
+```
+
+#### **GalleryResource**
+```php
+Form:
+- Single file upload (image_path)
+- Auto-resize: 1200x675 (2:1 aspect ratio)
+- Stored in: images/gallery/
+- Format: PNG
+
+Table:
+- Image column displays thumbnails
+- Date columns with D M d, Y format
+```
+
+#### **RoleResource**
+```php
+Form:
+- name (unique, required)
+- permissions (multi-select relationship)
+
+Table:
+- Role name
+- Created date
+
+Special: Manages Spatie role-permission relationships
+```
+
+#### **PermissionResource**
+```php
+Form:
+- name (unique, required)
+
+Table:
+- Permission name
+- Created date
+```
+
+#### **VisitorResource**
+```php
+Navigation Badge: Visitor count
+Table Features:
+- Copyable IP address with toast
+- Request count badge
+- "Visited" timestamp (human-readable with since())
+- Default sort: created_at DESC
+
+Purpose: Track website visitors by IP
+```
+
+---
+
+## 6. PRINTING/PDF MECHANISMS
+
+### PDF Generation System
+
+**Package Used:** `barryvdh/laravel-dompdf` v2.0
+
+#### **Client PDF Generation**
+```php
+Controller: PdfController
+Route: GET /pdf/{record}
+Input: Client $record (route model binding)
+View: /site/pdf/customer
+Output: Downloads PDF named "{client_name}.pdf"
+
+Usage in Filament:
+Tables\Actions\Action::make('pdf')
+    ->label('Print')
+    ->icon('heroicon-o-arrow-down-tray')
+    ->url(fn (Client $record) => route('pdf', $record))
+```
+
+#### **Service Request PDF Generation**
+```php
+Controller: PdfServiceGen
+Route: GET /pdf/e/{record}
+Input: ServiceRequest $record (route model binding)
+View: /site/pdf/customer (same view as Client)
+Output: Downloads PDF named "{service_request_name}.pdf"
+
+Usage in Filament:
+Tables\Actions\Action::make('pdfGen')
+    ->label('Print')
+    ->icon('heroicon-o-printer')
+    ->url(fn (ServiceRequest $record) => route('pdfGen', $record))
+```
+
+#### **PDF Implementation:**
+```php
+// In controller
+use Barryvdh\DomPDF\Facade\Pdf;
+
+return Pdf::loadView('/site/pdf/customer', ['record' => $record])
+    ->download($record->name . '.pdf');
+```
+
+---
+
+## 7. EMAIL SYSTEM
+
+### Mail Classes
+**Location:** `/home/kingsman/Projects/familypool-V2/app/Mail/`
+
+#### **Service Request Emails:**
+1. **ServiceSent** - Sent to company when service requested
+2. **ServiceReply** - Sent to customer as confirmation
+
+#### **Message/Contact Emails:**
+1. **MessageSent** - Sent to company when contact form submitted
+2. **MessageReceived** - Sent to customer as confirmation
+
+#### **Job Application Emails:**
+1. **JobSent** - Sent to company when job application submitted
+2. **JobReceived** - Sent to applicant as confirmation
+
+#### **Admin Email:**
+1. **CustomerEmailReply** - Admin reply to customer messages
+
+**Company Email Address:** familypoolservice2020@gmail.com
+
+---
+
+## 8. BACKGROUND JOBS & QUEUE SYSTEM
+
+### Jobs
+
+#### **MarkTaskOverdue**
+**Location:** `/home/kingsman/Projects/familypool-V2/app/Jobs/MarkTaskOverdue.php`
+
+```php
+Purpose: Automatically mark tasks as overdue
+Trigger: Dispatched when Task is created
+Delay: 3 minutes after task creation
+Process: Updates tasks with comments="Not Performed" to "Overdue"
+
+Implementation:
+protected static function booted()
+{
+    static::created(function ($task) {
+        MarkTaskOverdue::dispatch($task)->delay(now()->addMinutes(3));
+    });
+}
+```
+
+**Note:** There appears to be a bug in the job handle method. It should use:
+```php
+$this->task->where("comments", "Not Performed")->update(["comments" => "Overdue"]);
+```
+
+---
+
+## 9. MIDDLEWARE
+
+**Location:** `/home/kingsman/Projects/familypool-V2/app/Http/Middleware/`
+
+### Custom Middleware:
+1. **CheckServiceApplication** - Custom middleware (specific implementation not examined)
+
+### Standard Laravel Middleware:
+- Authenticate
+- EncryptCookies
+- PreventRequestsDuringMaintenance
+- RedirectIfAuthenticated
+- TrimStrings
+- TrustHosts
+- TrustProxies
+- ValidateSignature
+- VerifyCsrfToken
+
+---
+
+## 10. VISITOR TRACKING SYSTEM
+
+### Implementation
+
+**Package:** `shetabit/visitor` v4.1
+
+**Tables:**
+- visits (package table)
+- visitors (custom table)
+
+**Tracking Mechanism:**
+```php
+// In homepage route (/)
+$visitorIP = $request->ip();
+$visitor = Visitor::firstorCreate(['ip' => $visitorIP]);
+$visitor->increment('request');
+$visitor->save();
+```
+
+**Data Collected:**
+- IP address
+- Request count
+- Method, URL, Referer
+- User agent, headers
+- Device, platform, browser
+- Languages
+- Timestamps
+
+**Filament Resource:**
+- VisitorResource displays all visitors
+- Searchable by IP
+- Shows request count and last visit
+- Copyable IP addresses
+
+---
+
+## 11. VALIDATION RULES
+
+### Service Request Validation
+```php
+- name: required|string|min:5|max:50
+- zip: required
+- email: required|email|min:5|max:50
+- phone: required|string|min:5|max:50
+- service: required
+- description: required|string|min:10
+```
+
+### Message/Contact Validation
+```php
+- name: required|string|max:30
+- subject: required|string|max:255|min:2
+- email: required|email|max:255
+- message: required|string|max:1000|min:3
+```
+
+### Job Application Validation (Comprehensive)
+```php
+Personal:
+- name, email, nationality, city, state, street: required|string|max:255
+- email: unique:job_applicants,email
+- zip: required|integer|min_digits:3|max_digits:6
+- phone: required|string|max:255
+
+Demographics:
+- gender: required|in:Male,Female
+- age: required|integer|between:18,45
+- birthdate: required|date|date_format:Y-m-d
+
+Work Details:
+- days: required|array|min:2|max:6 (working days)
+- starttime, endtime: required|string
+- startdate: required|date|date_format:Y-m-d
+- workperiod: required|integer|between:3,12 (months)
+- workHours: required|integer|between:30,170 (hours/week)
+
+Security:
+- socialsecurity: required|in:SSN,EIN
+- socialsecurityNumber: nullable|min:11|max:11|unique
+- einNumber: nullable|min:10|max:10|unique
+
+License:
+- licence: required
+- licenceNumber: string|max:255|min:6
+- issueddate: required_if:licence,YES|date|date_format:Y-m-d
+- expiredate: required_if:licence,YES|date|date_format:Y-m-d
+- issuedcity: string|max:255
+
+Other:
+- smoke, transport: required
+```
+
+---
+
+## 12. FILE UPLOAD HANDLING
+
+### User Profile Photos
+```php
+Location: profile-photos/
+Format: WebP
+Size: 500x500 (1:1 aspect ratio)
+Naming: profile_{email}.webp
+Crop Mode: Cover
+```
+
+### Gallery Images
+```php
+Location: images/gallery/
+Format: PNG
+Size: 1200x675 (2:1 aspect ratio)
+Naming: {hash}.png
+Crop Mode: Cover
+```
+
+### Assigned Task Images
+```php
+Before Photos:
+- Location: image_before/
+- Naming: before_{client_name}_{random}.webp
+
+After Photos:
+- Location: image_aftre/ (note: typo in code)
+- Naming: after_{client_name}_{random}.webp
+
+Format: WebP
+Crop Mode: Cover
+Required: Both images mandatory
+```
+
+---
+
+## 13. FEATURES SUMMARY
+
+### Client Management
+- **Create/Edit Clients** with full contact information
+- **Categorize Clients:**
+  - Un Categorized
+  - Bi-weekly service
+  - Weekly service
+  - Monthly service
+- **Active/Inactive Status** toggle
+- **Print Client Details** as PDF
+- **Filter by Category**
+- **Soft Delete** capability
+
+### Service Request Management
+- **Public Service Request Form** (website)
+- **Auto-populate Client Data** when creating requests in admin
+- **Email Notifications:**
+  - Company notification
+  - Customer confirmation
+- **Assignment Tracking** (assigned boolean)
+- **Print Service Requests** as PDF
+- **Rich Text Editor** for service and description
+- **Soft Delete** capability
+
+### Task Management System
+- **Create Tasks** from service requests
+- **Assign to Technicians** (users)
+- **Task Status Tracking:**
+  - Not Performed (default)
+  - Overdue (auto-marked after 3 min)
+  - Custom status
+- **Scope Control:**
+  - Managers see all tasks
+  - Technicians see only their tasks
+- **Prevent Duplicate Assignments**
+- **Task Completion Workflow:**
+  - Technician receives task
+  - Completes assigned task form
+  - Submits feedback + before/after photos
+  - Task marked complete
+
+### Job Application System
+- **Authenticated Application Process**
+- **Comprehensive Application Form:**
+  - Personal information
+  - Work availability (days JSON array)
+  - Security (SSN/EIN)
+  - Driving license details
+  - Work preferences
+- **Email Notifications:**
+  - Company notification
+  - Applicant confirmation
+- **Hire Status Tracking**
+- **Filter Hired Applicants**
+- **Read-only View in Admin**
+
+### Message/Contact System
+- **Public Contact Form**
+- **Email Notifications:**
+  - Company notification
+  - Sender confirmation
+- **Admin Reply Functionality** (in-table action)
+- **User Message Inbox** (authenticated users)
+- **Copyable Email Addresses**
+- **Soft Delete** capability
+
+### Company Information Management
+- **About Us** content (up to 2500 chars)
+- **Company Contact Info:**
+  - Phone
+  - Two email addresses
+  - Physical address
+- **Social Media Links** with icons
+- **Gallery Management** (image uploads)
+- **Pop-up Management:**
+  - Header, body, action
+  - Page targeting
+
+### Visitor Analytics
+- **IP-based Tracking**
+- **Request Count** per visitor
+- **Device/Browser Detection**
+- **Timestamp Tracking**
+- **Admin Dashboard Visualization**
+
+### User Management
+- **Role-based Access:**
+  - Administrator
+  - Manager
+  - Technician
+  - User
+- **Profile Management:**
+  - Photo upload
+  - Contact details
+  - Team member designation
+- **Two-Factor Authentication** (Jetstream)
+- **Soft Delete** capability
+
+### Authentication & Security
+- **Laravel Jetstream** integration
+- **Laravel Sanctum** API authentication
+- **Spatie Permission** system
+- **Policy-based Authorization**
+- **Email Verification**
+- **Password Reset**
+- **Two-Factor Authentication**
+- **Session Management**
+
+---
+
+## 14. TECHNOLOGY STACK
+
+### Backend
+- **Framework:** Laravel 10.x
+- **PHP:** ^8.1
+- **Admin Panel:** Filament 3.0 (stable)
+- **Authentication:** Laravel Jetstream 4.0
+- **API:** Laravel Sanctum 3.2
+- **Permissions:** Spatie Laravel Permission 5.11
+
+### Frontend
+- **CSS Framework:** Tailwind CSS (via Jetstream)
+- **JavaScript:** Livewire 3.0
+- **Build Tool:** Vite
+
+### Additional Packages
+- **PDF Generation:** barryvdh/laravel-dompdf 2.0
+- **Visitor Tracking:** shetabit/visitor 4.1
+- **Analytics:** flowframe/laravel-trend 0.2.0
+- **Email Tools:** rickdbcn/filament-email 1.0
+
+### Database
+- **Migrations:** Full schema with relationships
+- **Soft Deletes:** Enabled on most tables
+- **Foreign Keys:** Cascade delete/update
+- **Indexes:** Strategic indexing on search fields
+
+---
+
+## 15. SEEDER DATA
+
+**Default Admin User:**
+```php
+Name: Joshua Jayrous
+Email: joshuajayrous@gmail.com
+Phone: +255 754 219 539
+City: Mwanza
+State: Mwanza City
+Street: Nyasaka
+Role: Company IT
+Nationality: Tanzania
+Password: password (hashed)
+```
+
+**Default Roles:**
+- Company IT
+- Manager
+- Technician
+
+**Default Permissions:**
+- View Any
+- Edit About
+- Delete Any
+- Restore
+- Manager
+- Technician Permission
+- IT Permission
+
+**Default Client Categories:**
+1. Un Categorized
+2. Bi-weekly service
+3. Weekly service
+4. Monthly service
+
+**Generated Test Data:**
+- 4 additional users (factory)
+- 20 clients (factory)
+
+---
+
+## 16. VIEW STRUCTURE
+
+### Public Site Views
+**Location:** `/home/kingsman/Projects/familypool-V2/resources/views/site/`
+
+- **index.blade.php** - Homepage
+- **service.blade.php** - Services page
+- **servicecategories.blade.php** - Service categories
+- **about.blade.php** - About page
+- **contact.blade.php** - Contact page
+- **gallery.blade.php** - Gallery page
+- **applicationform.blade.php** - Job application form
+- **serviceform.blade.php** - Service request form
+
+### User Dashboard Views
+- **messages/** - Message inbox views
+- **service/** - User's service requests
+
+### Common Components
+- **include/header.blade.php**
+- **include/footer.blade.php**
+
+### PDF Views
+- **pdf/customer.blade.php** - PDF template for clients/service requests
+
+---
+
+## 17. NOTIFICATION SYSTEM
+
+**Table:** notifications (Laravel database notifications)
+
+**Structure:**
+- UUID-based IDs
+- Polymorphic notifiable
+- JSON data storage
+- Read/unread tracking
+
+**Usage:** Configured for Laravel notifications, likely used for task assignments and updates.
+
+---
+
+## 18. KEY BUSINESS WORKFLOWS
+
+### 1. Service Request Workflow
+```
+Customer (Website) →
+  Fills service request form →
+  Submits request →
+  System creates ServiceRequest →
+  Emails sent (company + customer) →
+
+Manager (Admin Panel) →
+  Views service request →
+  Creates Task →
+  Assigns to Technician →
+  Task auto-marked "Overdue" after 3 min if not started →
+
+Technician (Admin Panel) →
+  Views assigned task →
+  Creates AssignedTask →
+  Uploads before/after photos →
+  Adds feedback →
+  Submits completion →
+  Task marked complete
+```
+
+### 2. Job Application Workflow
+```
+User (Website) →
+  Registers/Logs in →
+  Fills job application form →
+  Submits application →
+  Emails sent (company + applicant) →
+
+Manager (Admin Panel) →
+  Reviews applications →
+  Filters by skills/availability →
+  Toggles "Hire" status →
+  User becomes team member
+```
+
+### 3. Client Management Workflow
+```
+Manager (Admin Panel) →
+  Creates client →
+  Sets category →
+  Marks as active →
+
+Service Request Creation:
+  Selects client from dropdown (active only) →
+  Auto-fills contact info →
+  Adds service details →
+  Submits →
+
+Print Reports:
+  Clicks print action →
+  PDF generated →
+  Downloads client details
+```
+
+---
+
+## 19. CONFIGURATION NOTES
+
+### Email Configuration
+- Company email: familypoolservice2020@gmail.com
+- All notifications sent to this address
+- Customer confirmations sent from this address
+
+### Storage Configuration
+- Profile photos: profile-photos/
+- Gallery images: images/gallery/
+- Task photos: image_before/, image_aftre/
+- Company logo: /storage/images/logo/logo.svg
+
+### Filament Configuration
+- Path: /admin
+- Theme color: Blue
+- Font: Rubik
+- Collapsible sidebar
+- Auto-discovery enabled
+
+---
+
+## 20. ADDITIONAL FEATURES
+
+### Dashboard Widgets
+
+**StatsOverView Widget:**
+```php
+- "We now Serve In all USA": 15 Cities (TN)
+- "Services We Offer": 7 Services
+- "Our Happy Customers": 100k+
+```
+
+**Navigation Badges:**
+- Most resources show record counts
+- Managers see system-wide counts
+- Technicians see filtered counts
+
+### Soft Delete Implementation
+Nearly all tables use soft deletes:
+- users, clients, client_categories
+- service_requests, tasks, assigned_tasks
+- messages, job_applicants
+- galleries, pop_ups, company_infos
+- social_networks, abouts, visitors
+- permissions (Spatie)
+
+**Benefits:**
+- Data recovery capability
+- Audit trail preservation
+- Trash/restore functionality in admin
+
+---
+
+## CONCLUSION
+
+This is a comprehensive pool service management system with the following strengths:
+
+1. **Well-structured RBAC** with Spatie permissions
+2. **Complete task workflow** from request to completion
+3. **Automated notifications** via email
+4. **PDF generation** for record-keeping
+5. **Visitor analytics** for business intelligence
+6. **Soft deletes** throughout for data safety
+7. **Modern tech stack** (Laravel 10, Filament 3, Livewire 3)
+8. **Comprehensive validation** especially for job applications
+9. **Image handling** with automatic resizing
+10. **Scoped queries** for data security
+
+**For Migration to Laravel Inertia/React:**
+- All business logic is well-separated in controllers
+- Database schema is comprehensive and well-documented
+- Validation rules are clearly defined
+- API endpoints can be created using existing controller logic
+- Role/permission system can be ported to React context
+- File uploads will need Inertia-compatible handling
+- Email system remains backend (unchanged)
+- PDF generation remains backend (unchanged)
+
+All file paths referenced in this document are absolute paths from `/home/kingsman/Projects/familypool-V2/`

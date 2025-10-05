@@ -1,4 +1,3 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -11,24 +10,23 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import admin from '@/routes/admin';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
-    BookOpen,
-    Folder,
-    LayoutGrid,
-    Users,
     Briefcase,
+    CheckSquare,
+    ClipboardList,
+    FolderTree,
+    LayoutGrid,
     ListTodo,
     Mail,
-    UserCheck,
-    Eye,
     Settings,
-    FolderTree,
-    ClipboardList
+    UserCheck,
+    UserCog,
+    Users,
 } from 'lucide-react';
 import AppLogo from './app-logo';
-import admin from '@/routes/admin';
 
 const mainNavItems: NavItem[] = [
     {
@@ -60,6 +58,11 @@ const adminNavItems: NavItem[] = [
         icon: ListTodo,
     },
     {
+        title: 'Assigned Tasks',
+        href: admin.assignedTasks.index(),
+        icon: CheckSquare,
+    },
+    {
         title: 'Messages',
         href: admin.messages.index(),
         icon: Mail,
@@ -70,10 +73,15 @@ const adminNavItems: NavItem[] = [
         icon: UserCheck,
     },
     {
-        title: 'Visitors',
-        href: admin.visitors.index(),
-        icon: Eye,
+        title: 'User Management',
+        href: admin.users.index(),
+        icon: UserCog,
     },
+    // {
+    //     title: 'Visitors',
+    //     href: admin.visitors.index(),
+    //     icon: Eye,
+    // },
     {
         title: 'Settings',
         href: '#',
@@ -109,23 +117,36 @@ const adminNavItems: NavItem[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
-
 export function AppSidebar() {
     const { auth } = usePage().props as any;
     const userRoles = auth?.user?.roles || [];
-    const isAdmin = userRoles.some((role: any) => ['Administrator', 'Manager', 'Technician'].includes(role.name));
+    const isAdmin = userRoles.some((role: any) =>
+        ['Administrator', 'Manager', 'Technician'].includes(role),
+    );
+    const isManager = userRoles.some((role: any) =>
+        ['Administrator', 'Manager'].includes(role),
+    );
+
+    // Filter admin nav items based on role
+    const filteredAdminNavItems = adminNavItems.filter((item) => {
+        // Manager-only items
+        const managerOnlyItems = [
+            'Admin Dashboard',
+            'Clients',
+            'Service Requests',
+            'Tasks',
+            'Messages',
+            'Job Applicants',
+            'User Management',
+            'Visitors',
+            'Settings',
+        ];
+
+        if (managerOnlyItems.includes(item.title)) {
+            return isManager;
+        }
+        return true;
+    });
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -143,11 +164,11 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                {isAdmin && <NavMain items={adminNavItems} />}
+                {isAdmin && <NavMain items={filteredAdminNavItems} />}
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                {/* <NavFooter items={footerNavItems} className="mt-auto" /> */}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

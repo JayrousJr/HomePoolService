@@ -79,6 +79,6 @@ class PagesController extends Controller
      */
     public function askservice(): Response
     {
-        return Inertia::render('public/servicerequest', $this->getCommonData());
+        return Inertia::render('public/request-service', $this->getCommonData());
     }
 }

@@ -18,16 +18,38 @@ class AssignedTask extends Model
      */
     protected $fillable = [
         'task_id',
+        'status',
         'feedback',
         'image_before',
         'image_after',
+        'started_at',
+        'completed_at',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'started_at' => 'datetime',
+            'completed_at' => 'datetime',
+        ];
+    }
 
     /**
      * Relationships
      */
-    public function taskAssigned()
+    public function task()
     {
         return $this->belongsTo(Task::class, 'task_id');
+    }
+
+    // Legacy relationship name for backward compatibility
+    public function taskAssigned()
+    {
+        return $this->task();
     }
 }

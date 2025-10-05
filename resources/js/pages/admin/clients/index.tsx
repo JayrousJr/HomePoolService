@@ -1,12 +1,16 @@
-import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
 import admin from '@/routes/admin';
 import { type BreadcrumbItem } from '@/types';
-import { type Client, type ClientCategory, type PaginatedData } from '@/types/models';
+import {
+    type Client,
+    type ClientCategory,
+    type PaginatedData,
+} from '@/types/models';
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Edit, Trash2, Plus } from 'lucide-react';
+import { Edit, Eye, Plus, Trash2 } from 'lucide-react';
 
 interface ClientsIndexProps {
     clients: PaginatedData<Client>;
@@ -24,7 +28,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function ClientsIndex({ clients, categories }: ClientsIndexProps) {
+export default function ClientsIndex({
+    clients,
+    categories,
+}: ClientsIndexProps) {
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this client?')) {
             router.delete(admin.clients.destroy({ client: id }).url);
@@ -37,7 +44,9 @@ export default function ClientsIndex({ clients, categories }: ClientsIndexProps)
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <div className="space-y-2">
-                        <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            Clients
+                        </h1>
                         <p className="text-muted-foreground">
                             Manage your client accounts and information
                         </p>
@@ -71,9 +80,7 @@ export default function ClientsIndex({ clients, categories }: ClientsIndexProps)
                                         <th className="px-4 py-3 text-left text-sm font-medium">
                                             Category
                                         </th>
-                                        <th className="px-4 py-3 text-left text-sm font-medium">
-                                            ZIP
-                                        </th>
+
                                         <th className="px-4 py-3 text-left text-sm font-medium">
                                             Status
                                         </th>
@@ -96,7 +103,7 @@ export default function ClientsIndex({ clients, categories }: ClientsIndexProps)
                                         clients.data.map((client) => (
                                             <tr
                                                 key={client.id}
-                                                className="border-b hover:bg-accent/50 transition-colors"
+                                                className="border-b transition-colors hover:bg-accent/50"
                                             >
                                                 <td className="px-4 py-3 text-sm font-medium">
                                                     {client.name}
@@ -108,11 +115,11 @@ export default function ClientsIndex({ clients, categories }: ClientsIndexProps)
                                                     {client.phone}
                                                 </td>
                                                 <td className="px-4 py-3 text-sm">
-                                                    {client.category?.name || 'N/A'}
+                                                    <Badge variant="outline">
+                                                        {client.category?.category || 'N/A'}
+                                                    </Badge>
                                                 </td>
-                                                <td className="px-4 py-3 text-sm text-muted-foreground">
-                                                    {client.zip}
-                                                </td>
+
                                                 <td className="px-4 py-3">
                                                     <Badge
                                                         variant={
@@ -121,16 +128,20 @@ export default function ClientsIndex({ clients, categories }: ClientsIndexProps)
                                                                 : 'secondary'
                                                         }
                                                     >
-                                                        {client.active ? 'Active' : 'Inactive'}
+                                                        {client.active
+                                                            ? 'Active'
+                                                            : 'Inactive'}
                                                     </Badge>
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <Link
                                                             href={
-                                                                admin.clients.show({
-                                                                    client: client.id,
-                                                                }).url
+                                                                admin.clients.show(
+                                                                    {
+                                                                        client: client.id,
+                                                                    },
+                                                                ).url
                                                             }
                                                         >
                                                             <Button
@@ -142,9 +153,11 @@ export default function ClientsIndex({ clients, categories }: ClientsIndexProps)
                                                         </Link>
                                                         <Link
                                                             href={
-                                                                admin.clients.edit({
-                                                                    client: client.id,
-                                                                }).url
+                                                                admin.clients.edit(
+                                                                    {
+                                                                        client: client.id,
+                                                                    },
+                                                                ).url
                                                             }
                                                         >
                                                             <Button
@@ -158,7 +171,9 @@ export default function ClientsIndex({ clients, categories }: ClientsIndexProps)
                                                             variant="ghost"
                                                             size="sm"
                                                             onClick={() =>
-                                                                handleDelete(client.id)
+                                                                handleDelete(
+                                                                    client.id,
+                                                                )
                                                             }
                                                         >
                                                             <Trash2 className="h-4 w-4 text-destructive" />
@@ -175,8 +190,8 @@ export default function ClientsIndex({ clients, categories }: ClientsIndexProps)
                         {clients.last_page > 1 && (
                             <div className="mt-6 flex items-center justify-between border-t pt-4">
                                 <div className="text-sm text-muted-foreground">
-                                    Showing {clients.from} to {clients.to} of {clients.total}{' '}
-                                    results
+                                    Showing {clients.from} to {clients.to} of{' '}
+                                    {clients.total} results
                                 </div>
                                 <div className="flex gap-2">
                                     {clients.links.map((link, index) => {
@@ -198,7 +213,9 @@ export default function ClientsIndex({ clients, categories }: ClientsIndexProps)
                                             <Link key={index} href={link.url}>
                                                 <Button
                                                     variant={
-                                                        link.active ? 'default' : 'outline'
+                                                        link.active
+                                                            ? 'default'
+                                                            : 'outline'
                                                     }
                                                     size="sm"
                                                     dangerouslySetInnerHTML={{

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AssignedTask;
 use App\Models\ServiceRequest;
 use App\Models\Task;
 use App\Models\User;
@@ -23,7 +24,7 @@ class TaskController extends Controller
         $user = $request->user();
 
         // Build query based on user role
-        $query = Task::with(['serviceTask', 'userTask']);
+        $query = Task::with(['service_request', 'technician', 'assignedTasks:id,task_id,status']);
 
         if ($user->isManager()) {
             // Managers see all tasks
@@ -67,7 +68,7 @@ class TaskController extends Controller
         })->orderBy('name')->get();
 
         return Inertia::render('admin/tasks/create', [
-            'unassigned_requests' => $unassignedRequests,
+            'service_requests' => $unassignedRequests,
             'technicians' => $technicians,
         ]);
     }
@@ -87,18 +88,29 @@ class TaskController extends Controller
         $validated = $request->validate([
             'service_request_id' => 'required|exists:service_requests,id',
             'user_id' => 'required|exists:users,id',
-            'comments' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:pending,in_progress,completed,cancelled',
+            'scheduled_date' => 'nullable|date',
+            'comments' => 'nullable|string',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Create task with default values
+            // Create task
             $task = Task::create([
                 'service_request_id' => $validated['service_request_id'],
                 'user_id' => $validated['user_id'],
-                'status' => false,
-                'comments' => $validated['comments'] ?? 'Not Performed',
+                'status' => $validated['status'] ?? 'pending',
+                'scheduled_date' => $validated['scheduled_date'] ?? null,
+                'comments' => $validated['comments'] ?? null,
+            ]);
+
+            // Create an assigned task entry for the technician
+            AssignedTask::create([
+                'task_id' => $task->id,
+                'feedback' => null,
+                'image_before' => null,
+                'image_after' => null,
             ]);
 
             // Mark the service request as assigned
@@ -108,7 +120,7 @@ class TaskController extends Controller
             DB::commit();
 
             return redirect()->route('admin.tasks.index')
-                ->with('success', 'Task created and assigned successfully.');
+                ->with('success', 'Task created and assigned to technician successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -130,10 +142,11 @@ class TaskController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $task->load(['serviceTask', 'userTask', 'assignedtasks']);
+        $task->load(['service_request', 'technician', 'assignedTasks:id,task_id,status']);
 
         return Inertia::render('admin/tasks/show', [
             'task' => $task,
+            'is_manager' => $user->isManager(),
         ]);
     }
 
@@ -179,16 +192,41 @@ class TaskController extends Controller
         $validated = $request->validate([
             'service_request_id' => 'required|exists:service_requests,id',
             'user_id' => 'required|exists:users,id',
-            'status' => 'boolean',
-            'comments' => 'nullable|string|max:255',
+            'status' => 'required|string|in:pending,in_progress,completed,cancelled',
+            'scheduled_date' => 'nullable|date',
+            'comments' => 'nullable|string',
         ]);
 
         try {
+            DB::beginTransaction();
+
+            $oldUserId = $task->user_id;
+
             $task->update($validated);
+
+            // If technician changed, update or create assigned task entry
+            if ($oldUserId !== $validated['user_id']) {
+                // Check if assigned task exists
+                $assignedTask = AssignedTask::where('task_id', $task->id)->first();
+
+                if (!$assignedTask) {
+                    // Create new assigned task entry
+                    AssignedTask::create([
+                        'task_id' => $task->id,
+                        'feedback' => null,
+                        'image_before' => null,
+                        'image_after' => null,
+                    ]);
+                }
+            }
+
+            DB::commit();
 
             return redirect()->route('admin.tasks.index')
                 ->with('success', 'Task updated successfully.');
         } catch (\Exception $e) {
+            DB::rollBack();
+
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Failed to update task: ' . $e->getMessage());

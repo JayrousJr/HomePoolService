@@ -135,6 +135,14 @@ export interface Visitor {
     updated_at: string;
 }
 
+// Gallery interface
+export interface Gallery {
+    id: string;
+    image_path: string;
+    created_at: string;
+    updated_at: string;
+}
+
 // Dashboard Stats interface
 export interface DashboardStats {
     total_users: number;
@@ -142,4 +150,55 @@ export interface DashboardStats {
     total_service_requests: number;
     total_tasks: number;
     total_messages: number;
+}
+
+// About interface
+export interface About {
+    id: string;
+    title: string;
+    description: string;
+    image_path?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+// Company Info interface
+export interface CompanyInfo {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zip?: string | null;
+    description?: string | null;
+    logo_path?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+// Popup interface
+export interface Popup {
+    id: string;
+    title: string;
+    content: string;
+    image_path?: string | null;
+    active: boolean;
+    start_date?: string | null;
+    end_date?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+// Social Network interface
+export interface SocialNetwork {
+    id: number;
+    platform: string;
+    url: string;
+    icon?: string | null;
+    active: boolean;
+    order?: number | null;
+    created_at: string;
+    updated_at: string;
 }

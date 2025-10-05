@@ -1,12 +1,12 @@
-import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
 import admin from '@/routes/admin';
 import { type BreadcrumbItem } from '@/types';
-import { type ServiceRequest, type PaginatedData } from '@/types/models';
+import { type PaginatedData, type ServiceRequest } from '@/types/models';
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Edit, Trash2, UserPlus } from 'lucide-react';
+import { Eye, UserPlus } from 'lucide-react';
 
 interface ServiceRequestsIndexProps {
     service_requests: PaginatedData<ServiceRequest>;
@@ -28,7 +28,9 @@ export default function ServiceRequestsIndex({
 }: ServiceRequestsIndexProps) {
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this service request?')) {
-            router.delete(admin.serviceRequests.destroy({ service_request: id }).url);
+            router.delete(
+                admin.serviceRequests.destroy({ service_request: id }).url,
+            );
         }
     };
 
@@ -95,7 +97,7 @@ export default function ServiceRequestsIndex({
                                         service_requests.data.map((request) => (
                                             <tr
                                                 key={request.id}
-                                                className="border-b hover:bg-accent/50 transition-colors"
+                                                className="border-b transition-colors hover:bg-accent/50"
                                             >
                                                 <td className="px-4 py-3 text-sm font-medium">
                                                     {request.name}
@@ -129,16 +131,19 @@ export default function ServiceRequestsIndex({
                                                 </td>
                                                 <td className="px-4 py-3 text-sm text-muted-foreground">
                                                     {new Date(
-                                                        request.created_at
+                                                        request.created_at,
                                                     ).toLocaleDateString()}
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <Link
                                                             href={
-                                                                admin.serviceRequests.show({
-                                                                    service_request: request.id,
-                                                                }).url
+                                                                admin.serviceRequests.show(
+                                                                    {
+                                                                        service_request:
+                                                                            request.id,
+                                                                    },
+                                                                ).url
                                                             }
                                                         >
                                                             <Button
@@ -148,7 +153,7 @@ export default function ServiceRequestsIndex({
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
-                                                        <Link
+                                                        {/* <Link
                                                             href={
                                                                 admin.serviceRequests.edit({
                                                                     service_request: request.id,
@@ -170,7 +175,7 @@ export default function ServiceRequestsIndex({
                                                             }
                                                         >
                                                             <Trash2 className="h-4 w-4 text-destructive" />
-                                                        </Button>
+                                                        </Button> */}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -183,39 +188,47 @@ export default function ServiceRequestsIndex({
                         {service_requests.last_page > 1 && (
                             <div className="mt-6 flex items-center justify-between border-t pt-4">
                                 <div className="text-sm text-muted-foreground">
-                                    Showing {service_requests.from} to {service_requests.to}{' '}
-                                    of {service_requests.total} results
+                                    Showing {service_requests.from} to{' '}
+                                    {service_requests.to} of{' '}
+                                    {service_requests.total} results
                                 </div>
                                 <div className="flex gap-2">
-                                    {service_requests.links.map((link, index) => {
-                                        if (!link.url) {
-                                            return (
-                                                <Button
-                                                    key={index}
-                                                    variant="outline"
-                                                    size="sm"
-                                                    disabled
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: link.label,
-                                                    }}
-                                                />
-                                            );
-                                        }
+                                    {service_requests.links.map(
+                                        (link, index) => {
+                                            if (!link.url) {
+                                                return (
+                                                    <Button
+                                                        key={index}
+                                                        variant="outline"
+                                                        size="sm"
+                                                        disabled
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: link.label,
+                                                        }}
+                                                    />
+                                                );
+                                            }
 
-                                        return (
-                                            <Link key={index} href={link.url}>
-                                                <Button
-                                                    variant={
-                                                        link.active ? 'default' : 'outline'
-                                                    }
-                                                    size="sm"
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: link.label,
-                                                    }}
-                                                />
-                                            </Link>
-                                        );
-                                    })}
+                                            return (
+                                                <Link
+                                                    key={index}
+                                                    href={link.url}
+                                                >
+                                                    <Button
+                                                        variant={
+                                                            link.active
+                                                                ? 'default'
+                                                                : 'outline'
+                                                        }
+                                                        size="sm"
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: link.label,
+                                                        }}
+                                                    />
+                                                </Link>
+                                            );
+                                        },
+                                    )}
                                 </div>
                             </div>
                         )}

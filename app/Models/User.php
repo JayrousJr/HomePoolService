@@ -34,6 +34,7 @@ class User extends Authenticatable
         'team_member',
         'role',
         'profile_photo_path',
+        'active'
     ];
 
     /**
@@ -104,5 +105,9 @@ class User extends Authenticatable
     public function isManager(): bool
     {
         return $this->hasRole(['Manager', 'Administrator']);
+    }
+    public function canPerformTask(){
+        return $this->hasRole(['Manager', 'Technician']);
+
     }
 }

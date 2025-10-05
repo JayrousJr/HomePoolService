@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\AssignedTask;
 use App\Models\Message;
 use App\Models\ServiceRequest;
 use Illuminate\Http\Request;
@@ -19,13 +20,42 @@ class UserDashboardController extends Controller
     {
         $user = Auth::user();
 
+        // Check if user is a technician
+        $isTechnician = $user->roles->contains(function ($role) {
+            return $role->name === 'Technician';
+        });
+
+        if ($isTechnician) {
+            // Technician dashboard - show only their assigned tasks
+            $assignedTasks = AssignedTask::with(['task.service_request', 'task.technician'])
+                ->whereHas('task', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->get();
+
+            $stats = [
+                'total_assigned_tasks' => $assignedTasks->count(),
+                'pending_tasks' => $assignedTasks->where('status', 'pending')->count(),
+                'in_progress_tasks' => $assignedTasks->where('status', 'in_progress')->count(),
+                'completed_tasks' => $assignedTasks->where('status', 'completed')->count(),
+            ];
+
+            return Inertia::render('dashboard', [
+                'stats' => $stats,
+                'is_technician' => true,
+                'recent_tasks' => $assignedTasks->take(5),
+            ]);
+        }
+
+        // Regular user dashboard
         $stats = [
             'messagesCount' => Message::where('email', $user->email)->count(),
             'serviceRequestsCount' => ServiceRequest::where('email', $user->email)->count(),
         ];
 
-        return Inertia::render('user/dashboard', [
+        return Inertia::render('dashboard', [
             'stats' => $stats,
+            'is_technician' => false,
         ]);
     }
 

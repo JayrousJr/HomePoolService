@@ -1,12 +1,23 @@
-import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
 import admin from '@/routes/admin';
 import { type BreadcrumbItem } from '@/types';
 import { type JobApplicant, type PaginatedData } from '@/types/models';
-import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Edit, Trash2, FileText, Download } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Check, Eye, Trash2, UserCheck, UserPlus, X } from 'lucide-react';
+import { useState } from 'react';
 
 interface JobApplicantsIndexProps {
     applicants: PaginatedData<JobApplicant>;
@@ -24,35 +35,71 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const getStatusVariant = (
-    status: JobApplicant['hire_status']
+    status: string,
 ): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
         case 'hired':
             return 'default';
-        case 'interviewed':
+        case 'accepted':
             return 'secondary';
         case 'rejected':
             return 'destructive';
-        case 'reviewing':
         case 'pending':
         default:
             return 'outline';
     }
 };
 
-const getStatusLabel = (status: JobApplicant['hire_status']): string => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
-};
+export default function JobApplicantsIndex({
+    applicants,
+}: JobApplicantsIndexProps) {
+    const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+    const [selectedApplicant, setSelectedApplicant] =
+        useState<JobApplicant | null>(null);
 
-export default function JobApplicantsIndex({ applicants }: JobApplicantsIndexProps) {
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this applicant?')) {
-            router.delete(admin.jobApplicants.destroy({ job_applicant: id }).url);
+    const { data, setData, post, processing, reset } = useForm({
+        rejection_reason: '',
+    });
+
+    const handleAccept = (applicantId: string) => {
+        if (confirm('Are you sure you want to accept this application?')) {
+            router.post(`/admin/job-applicants/${applicantId}/accept`);
         }
     };
 
-    const handleDownloadResume = (resumePath: string) => {
-        window.open(resumePath, '_blank');
+    const handleRejectClick = (applicant: JobApplicant) => {
+        setSelectedApplicant(applicant);
+        setRejectDialogOpen(true);
+    };
+
+    const handleRejectSubmit = () => {
+        if (selectedApplicant) {
+            post(`/admin/job-applicants/${selectedApplicant.id}/reject`, {
+                onSuccess: () => {
+                    setRejectDialogOpen(false);
+                    reset();
+                    setSelectedApplicant(null);
+                },
+            });
+        }
+    };
+
+    const handleHire = (applicantId: string) => {
+        if (
+            confirm(
+                'Are you sure you want to hire this applicant? This will create a technician account and send credentials via email.',
+            )
+        ) {
+            router.post(`/admin/job-applicants/${applicantId}/hire`);
+        }
+    };
+
+    const handleDelete = (id: string) => {
+        if (confirm('Are you sure you want to delete this applicant?')) {
+            router.delete(
+                admin.jobApplicants.destroy({ job_applicant: id }).url,
+            );
+        }
     };
 
     return (
@@ -70,9 +117,75 @@ export default function JobApplicantsIndex({ applicants }: JobApplicantsIndexPro
                     </div>
                 </div>
 
+                {/* Stats Cards */}
+                <div className="grid gap-4 md:grid-cols-4">
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Applications
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">
+                                {applicants.total}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Pending
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">
+                                {
+                                    applicants.data.filter(
+                                        (a) => a.status === 'pending',
+                                    ).length
+                                }
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Accepted
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">
+                                {
+                                    applicants.data.filter(
+                                        (a) => a.status === 'accepted',
+                                    ).length
+                                }
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Hired
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">
+                                {
+                                    applicants.data.filter(
+                                        (a) => a.status === 'hired',
+                                    ).length
+                                }
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
                 <Card>
                     <CardHeader>
-                        <CardTitle>All Applicants ({applicants.total})</CardTitle>
+                        <CardTitle>
+                            All Applicants ({applicants.total})
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="overflow-x-auto">
@@ -92,10 +205,7 @@ export default function JobApplicantsIndex({ applicants }: JobApplicantsIndexPro
                                             Location
                                         </th>
                                         <th className="px-4 py-3 text-left text-sm font-medium">
-                                            Hire Status
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-sm font-medium">
-                                            Resume
+                                            Status
                                         </th>
                                         <th className="px-4 py-3 text-left text-sm font-medium">
                                             Applied At
@@ -109,7 +219,7 @@ export default function JobApplicantsIndex({ applicants }: JobApplicantsIndexPro
                                     {applicants.data.length === 0 ? (
                                         <tr>
                                             <td
-                                                colSpan={8}
+                                                colSpan={7}
                                                 className="px-4 py-8 text-center text-sm text-muted-foreground"
                                             >
                                                 No applicants found
@@ -119,7 +229,7 @@ export default function JobApplicantsIndex({ applicants }: JobApplicantsIndexPro
                                         applicants.data.map((applicant) => (
                                             <tr
                                                 key={applicant.id}
-                                                className="border-b hover:bg-accent/50 transition-colors"
+                                                className="border-b transition-colors hover:bg-accent/50"
                                             >
                                                 <td className="px-4 py-3 text-sm font-medium">
                                                     {applicant.name}
@@ -131,83 +241,134 @@ export default function JobApplicantsIndex({ applicants }: JobApplicantsIndexPro
                                                     {applicant.phone}
                                                 </td>
                                                 <td className="px-4 py-3 text-sm text-muted-foreground">
-                                                    {applicant.city && applicant.state
+                                                    {applicant.city &&
+                                                    applicant.state
                                                         ? `${applicant.city}, ${applicant.state}`
-                                                        : applicant.zip || 'N/A'}
+                                                        : applicant.zip ||
+                                                          'N/A'}
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <Badge
                                                         variant={getStatusVariant(
-                                                            applicant.hire_status
+                                                            applicant.status ||
+                                                                'pending',
                                                         )}
                                                     >
-                                                        {getStatusLabel(applicant.hire_status)}
+                                                        {(
+                                                            applicant.status ||
+                                                            'pending'
+                                                        )
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            (
+                                                                applicant.status ||
+                                                                'pending'
+                                                            ).slice(1)}
                                                     </Badge>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    {applicant.resume_path ? (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                handleDownloadResume(
-                                                                    applicant.resume_path!
-                                                                )
-                                                            }
-                                                        >
-                                                            <Download className="h-4 w-4 mr-1" />
-                                                            View
-                                                        </Button>
-                                                    ) : (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            No resume
-                                                        </span>
-                                                    )}
                                                 </td>
                                                 <td className="px-4 py-3 text-sm text-muted-foreground">
                                                     {new Date(
-                                                        applicant.created_at
+                                                        applicant.created_at,
                                                     ).toLocaleDateString()}
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <Link
                                                             href={
-                                                                admin.jobApplicants.show({
-                                                                    job_applicant: applicant.id,
-                                                                }).url
+                                                                admin.jobApplicants.show(
+                                                                    {
+                                                                        job_applicant:
+                                                                            applicant.id,
+                                                                    },
+                                                                ).url
                                                             }
                                                         >
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
+                                                                title="View Details"
                                                             >
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
-                                                        <Link
-                                                            href={
-                                                                admin.jobApplicants.edit({
-                                                                    job_applicant: applicant.id,
-                                                                }).url
-                                                            }
-                                                        >
+
+                                                        {applicant.status ===
+                                                            'pending' && (
+                                                            <>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() =>
+                                                                        handleAccept(
+                                                                            applicant.id,
+                                                                        )
+                                                                    }
+                                                                    title="Accept"
+                                                                    className="text-green-600 hover:text-green-700"
+                                                                >
+                                                                    <Check className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() =>
+                                                                        handleRejectClick(
+                                                                            applicant,
+                                                                        )
+                                                                    }
+                                                                    title="Reject"
+                                                                    className="text-red-600 hover:text-red-700"
+                                                                >
+                                                                    <X className="h-4 w-4" />
+                                                                </Button>
+                                                            </>
+                                                        )}
+
+                                                        {applicant.status ===
+                                                            'accepted' && (
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
+                                                                onClick={() =>
+                                                                    handleHire(
+                                                                        applicant.id,
+                                                                    )
+                                                                }
+                                                                title="Hire & Create Account"
+                                                                className="text-blue-600 hover:text-blue-700"
                                                             >
-                                                                <Edit className="h-4 w-4" />
+                                                                <UserPlus className="h-4 w-4" />
                                                             </Button>
-                                                        </Link>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                handleDelete(applicant.id)
-                                                            }
-                                                        >
-                                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                                        </Button>
+                                                        )}
+
+                                                        {applicant.status ===
+                                                            'hired' && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                disabled
+                                                                title="Hired"
+                                                                className="text-green-600"
+                                                            >
+                                                                <UserCheck className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+
+                                                        {applicant.status !==
+                                                            'hired' && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    handleDelete(
+                                                                        applicant.id,
+                                                                    )
+                                                                }
+                                                                title="Delete"
+                                                            >
+                                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -220,8 +381,8 @@ export default function JobApplicantsIndex({ applicants }: JobApplicantsIndexPro
                         {applicants.last_page > 1 && (
                             <div className="mt-6 flex items-center justify-between border-t pt-4">
                                 <div className="text-sm text-muted-foreground">
-                                    Showing {applicants.from} to {applicants.to} of{' '}
-                                    {applicants.total} results
+                                    Showing {applicants.from} to {applicants.to}{' '}
+                                    of {applicants.total} results
                                 </div>
                                 <div className="flex gap-2">
                                     {applicants.links.map((link, index) => {
@@ -243,7 +404,9 @@ export default function JobApplicantsIndex({ applicants }: JobApplicantsIndexPro
                                             <Link key={index} href={link.url}>
                                                 <Button
                                                     variant={
-                                                        link.active ? 'default' : 'outline'
+                                                        link.active
+                                                            ? 'default'
+                                                            : 'outline'
                                                     }
                                                     size="sm"
                                                     dangerouslySetInnerHTML={{
@@ -259,6 +422,50 @@ export default function JobApplicantsIndex({ applicants }: JobApplicantsIndexPro
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Reject Dialog */}
+            <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Reject Application</DialogTitle>
+                        <DialogDescription>
+                            Provide a reason for rejecting this application
+                            (optional). An email will be sent to the applicant.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="rejection_reason">
+                                Rejection Reason
+                            </Label>
+                            <Textarea
+                                id="rejection_reason"
+                                placeholder="Enter reason for rejection (optional)..."
+                                value={data.rejection_reason}
+                                onChange={(e) =>
+                                    setData('rejection_reason', e.target.value)
+                                }
+                                rows={4}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setRejectDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleRejectSubmit}
+                            disabled={processing}
+                        >
+                            {processing ? 'Rejecting...' : 'Reject Application'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

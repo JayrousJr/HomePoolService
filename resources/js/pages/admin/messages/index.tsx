@@ -1,12 +1,12 @@
-import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
 import admin from '@/routes/admin';
 import { type BreadcrumbItem } from '@/types';
 import { type Message, type PaginatedData } from '@/types/models';
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Trash2, Mail, MailOpen } from 'lucide-react';
+import { Eye, Mail, MailOpen, Trash2 } from 'lucide-react';
 
 interface MessagesIndexProps {
     messages: PaginatedData<Message>;
@@ -38,14 +38,19 @@ export default function MessagesIndex({ messages }: MessagesIndexProps) {
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <div className="space-y-2">
-                        <h1 className="text-3xl font-bold tracking-tight">Messages</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            Messages
+                        </h1>
                         <p className="text-muted-foreground">
                             Contact form submissions and customer inquiries
                         </p>
                     </div>
                     {unreadCount > 0 && (
-                        <Badge variant="destructive" className="text-base px-4 py-2">
-                            {unreadCount} Unread
+                        <Badge
+                            variant="destructive"
+                            className="px-4 py-2 text-base"
+                        >
+                            {unreadCount} Message(s)
                         </Badge>
                     )}
                 </div>
@@ -96,8 +101,10 @@ export default function MessagesIndex({ messages }: MessagesIndexProps) {
                                         messages.data.map((message) => (
                                             <tr
                                                 key={message.id}
-                                                className={`border-b hover:bg-accent/50 transition-colors ${
-                                                    !message.read ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''
+                                                className={`border-b transition-colors hover:bg-accent/50 ${
+                                                    !message.read
+                                                        ? 'bg-blue-50/50 dark:bg-blue-950/20'
+                                                        : ''
                                                 }`}
                                             >
                                                 <td className="px-4 py-3">
@@ -133,11 +140,11 @@ export default function MessagesIndex({ messages }: MessagesIndexProps) {
                                                 </td>
                                                 <td className="px-4 py-3 text-sm text-muted-foreground">
                                                     {new Date(
-                                                        message.created_at
+                                                        message.created_at,
                                                     ).toLocaleDateString()}
                                                     <div className="text-xs">
                                                         {new Date(
-                                                            message.created_at
+                                                            message.created_at,
                                                         ).toLocaleTimeString()}
                                                     </div>
                                                 </td>
@@ -145,9 +152,12 @@ export default function MessagesIndex({ messages }: MessagesIndexProps) {
                                                     <div className="flex items-center justify-end gap-2">
                                                         <Link
                                                             href={
-                                                                admin.messages.show({
-                                                                    message: message.id,
-                                                                }).url
+                                                                admin.messages.show(
+                                                                    {
+                                                                        message:
+                                                                            message.id,
+                                                                    },
+                                                                ).url
                                                             }
                                                         >
                                                             <Button
@@ -161,7 +171,9 @@ export default function MessagesIndex({ messages }: MessagesIndexProps) {
                                                             variant="ghost"
                                                             size="sm"
                                                             onClick={() =>
-                                                                handleDelete(message.id)
+                                                                handleDelete(
+                                                                    message.id,
+                                                                )
                                                             }
                                                         >
                                                             <Trash2 className="h-4 w-4 text-destructive" />
@@ -201,7 +213,9 @@ export default function MessagesIndex({ messages }: MessagesIndexProps) {
                                             <Link key={index} href={link.url}>
                                                 <Button
                                                     variant={
-                                                        link.active ? 'default' : 'outline'
+                                                        link.active
+                                                            ? 'default'
+                                                            : 'outline'
                                                     }
                                                     size="sm"
                                                     dangerouslySetInnerHTML={{

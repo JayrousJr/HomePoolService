@@ -17,9 +17,19 @@ class Message extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'client_id',
         'name',
         'email',
+        'phone',
         'subject',
         'message',
     ];
+
+    /**
+     * Relationships
+     */
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
 }

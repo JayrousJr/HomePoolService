@@ -1,15 +1,19 @@
-import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
 import admin from '@/routes/admin';
 import { type BreadcrumbItem } from '@/types';
-import { type Task, type PaginatedData } from '@/types/models';
+import { type PaginatedData, type Task } from '@/types/models';
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Edit, Trash2, Plus } from 'lucide-react';
+import { Edit, Eye, Plus, Trash2 } from 'lucide-react';
 
 interface TasksIndexProps {
-    tasks: PaginatedData<Task>;
+    tasks: PaginatedData<
+        Task & {
+            assigned_tasks?: Array<{ id: string; status: string }>;
+        }
+    >;
     is_manager: boolean;
 }
 
@@ -25,7 +29,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const getStatusVariant = (
-    status: Task['status']
+    status: Task['status'],
 ): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
         case 'completed':
@@ -67,7 +71,9 @@ export default function TasksIndex({ tasks, is_manager }: TasksIndexProps) {
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <div className="space-y-2">
-                        <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            Tasks
+                        </h1>
                         <p className="text-muted-foreground">
                             {is_manager
                                 ? 'Manage all tasks assigned to technicians'
@@ -107,9 +113,9 @@ export default function TasksIndex({ tasks, is_manager }: TasksIndexProps) {
                                         <th className="px-4 py-3 text-left text-sm font-medium">
                                             Scheduled Date
                                         </th>
-                                        <th className="px-4 py-3 text-left text-sm font-medium">
+                                        {/* <th className="px-4 py-3 text-left text-sm font-medium">
                                             Comments
-                                        </th>
+                                        </th> */}
                                         <th className="px-4 py-3 text-left text-sm font-medium">
                                             Created At
                                         </th>
@@ -132,50 +138,63 @@ export default function TasksIndex({ tasks, is_manager }: TasksIndexProps) {
                                         tasks.data.map((task) => (
                                             <tr
                                                 key={task.id}
-                                                className="border-b hover:bg-accent/50 transition-colors"
+                                                className="border-b transition-colors hover:bg-accent/50"
                                             >
                                                 <td className="px-4 py-3 text-sm font-medium">
-                                                    {task.service_request?.name || 'N/A'}
+                                                    {task.service_request
+                                                        ?.name || 'N/A'}
                                                     <div className="text-xs text-muted-foreground">
-                                                        {task.service_request?.service}
+                                                        {
+                                                            task.service_request
+                                                                ?.service
+                                                        }
                                                     </div>
                                                 </td>
                                                 {is_manager && (
                                                     <td className="px-4 py-3 text-sm">
-                                                        {task.technician?.name || 'Unassigned'}
+                                                        {task.technician
+                                                            ?.name ||
+                                                            'Unassigned'}
                                                     </td>
                                                 )}
                                                 <td className="px-4 py-3">
-                                                    <Badge variant={getStatusVariant(task.status)}>
-                                                        {task.status.replace('_', ' ')}
+                                                    <Badge
+                                                        variant={getStatusVariant(
+                                                            task.status,
+                                                        )}
+                                                    >
+                                                        {task.status}
                                                     </Badge>
                                                 </td>
                                                 <td className="px-4 py-3 text-sm text-muted-foreground">
                                                     {task.scheduled_date
                                                         ? new Date(
-                                                              task.scheduled_date
+                                                              task.scheduled_date,
                                                           ).toLocaleDateString()
                                                         : 'Not scheduled'}
                                                 </td>
-                                                <td className="px-4 py-3 text-sm">
+                                                {/* <td className="px-4 py-3 text-sm">
                                                     <div
                                                         className={`max-w-xs truncate ${getStatusColor(task.status)}`}
                                                     >
-                                                        {task.comments || 'No comments'}
+                                                        {task.comments ||
+                                                            'No comments'}
                                                     </div>
-                                                </td>
+                                                </td> */}
                                                 <td className="px-4 py-3 text-sm text-muted-foreground">
                                                     {new Date(
-                                                        task.created_at
+                                                        task.created_at,
                                                     ).toLocaleDateString()}
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <Link
                                                             href={
-                                                                admin.tasks.show({
-                                                                    task: task.id,
-                                                                }).url
+                                                                admin.tasks.show(
+                                                                    {
+                                                                        task: task.id,
+                                                                    },
+                                                                ).url
                                                             }
                                                         >
                                                             <Button
@@ -185,31 +204,51 @@ export default function TasksIndex({ tasks, is_manager }: TasksIndexProps) {
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
-                                                        <Link
-                                                            href={
-                                                                admin.tasks.edit({
-                                                                    task: task.id,
-                                                                }).url
-                                                            }
-                                                        >
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                            >
-                                                                <Edit className="h-4 w-4" />
-                                                            </Button>
-                                                        </Link>
-                                                        {is_manager && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    handleDelete(task.id)
-                                                                }
-                                                            >
-                                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                                            </Button>
-                                                        )}
+                                                        {is_manager &&
+                                                            !task.assigned_tasks?.some(
+                                                                (at) =>
+                                                                    at.status ===
+                                                                        'cancelled' ||
+                                                                    at.status ===
+                                                                        'completed',
+                                                            ) && (
+                                                                <Link
+                                                                    href={
+                                                                        admin.tasks.edit(
+                                                                            {
+                                                                                task: task.id,
+                                                                            },
+                                                                        ).url
+                                                                    }
+                                                                >
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                    >
+                                                                        <Edit className="h-4 w-4" />
+                                                                    </Button>
+                                                                </Link>
+                                                            )}
+                                                        {is_manager &&
+                                                            !task.assigned_tasks?.some(
+                                                                (at) =>
+                                                                    at.status ===
+                                                                        'cancelled' ||
+                                                                    at.status ===
+                                                                        'completed',
+                                                            ) && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() =>
+                                                                        handleDelete(
+                                                                            task.id,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                                </Button>
+                                                            )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -222,8 +261,8 @@ export default function TasksIndex({ tasks, is_manager }: TasksIndexProps) {
                         {tasks.last_page > 1 && (
                             <div className="mt-6 flex items-center justify-between border-t pt-4">
                                 <div className="text-sm text-muted-foreground">
-                                    Showing {tasks.from} to {tasks.to} of {tasks.total}{' '}
-                                    results
+                                    Showing {tasks.from} to {tasks.to} of{' '}
+                                    {tasks.total} results
                                 </div>
                                 <div className="flex gap-2">
                                     {tasks.links.map((link, index) => {
@@ -245,7 +284,9 @@ export default function TasksIndex({ tasks, is_manager }: TasksIndexProps) {
                                             <Link key={index} href={link.url}>
                                                 <Button
                                                     variant={
-                                                        link.active ? 'default' : 'outline'
+                                                        link.active
+                                                            ? 'default'
+                                                            : 'outline'
                                                     }
                                                     size="sm"
                                                     dangerouslySetInnerHTML={{

@@ -20,6 +20,7 @@ class MessageController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:30',
                 'email' => 'required|email|max:255',
+                'phone' => 'nullable|string|max:20',
                 'subject' => 'required|string|min:2|max:255',
                 'message' => 'required|string|min:3|max:1000',
             ]);
@@ -28,6 +29,7 @@ class MessageController extends Controller
             Message::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
                 'subject' => $validated['subject'],
                 'message' => $validated['message'],
             ]);
@@ -36,7 +38,7 @@ class MessageController extends Controller
             // Mail::to('familypoolservice2020@gmail.com')->send(new MessageSent($message));
             // Mail::to($validated['email'])->send(new MessageReceived($message));
 
-            return redirect()->route('home')
+            return redirect()->back()
                 ->with('success', 'Thank you for contacting us! We will get back to you soon.');
         } catch (\Exception $e) {
             Log::error('Message submission failed: ' . $e->getMessage());

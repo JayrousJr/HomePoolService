@@ -44,6 +44,12 @@ class JobApplicant extends Model
         'issuedcity',
         'transport',
         'hire',
+        'status',
+        'user_id',
+        'accepted_at',
+        'rejected_at',
+        'hired_at',
+        'rejection_reason',
     ];
 
     /**
@@ -56,6 +62,17 @@ class JobApplicant extends Model
         return [
             'hire' => 'boolean',
             'days' => 'array',
+            'accepted_at' => 'datetime',
+            'rejected_at' => 'datetime',
+            'hired_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Relationships
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

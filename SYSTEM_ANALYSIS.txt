@@ -1490,3 +1490,6 @@ This is a comprehensive pool service management system with the following streng
 - PDF generation remains backend (unchanged)
 
 All file paths referenced in this document are absolute paths from `/home/kingsman/Projects/familypool-V2/`
+
+
+Registration failed: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'SH027' for key 'locations_code_unique' (Connection: mysql, SQL: insert into `locations` (`name`, `code`, `type`, `description`, `address`, `is_active`, `is_default`, `created_by`, `id`, `updated_at`, `created_at`) values (Paula Mcbride, SH027, shop, Shop location for Paula Mcbride, {"street":"","city":"","country":"","district":""}, 1, 1, a00a394c-df14-4475-acb2-4459b400d7ce, a00a394c-e091-4d30-9894-75354b604e48, 2025-10-05 09:48:34, 2025-10-05 09:48:34))

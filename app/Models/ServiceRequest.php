@@ -18,6 +18,7 @@ class ServiceRequest extends Model
      */
     protected $fillable = [
         'assigned',
+        'client_id',
         'name',
         'email',
         'zip',
@@ -42,6 +43,11 @@ class ServiceRequest extends Model
     /**
      * Relationships
      */
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
+
     public function techAssign()
     {
         return $this->belongsTo(User::class, 'user_id');

@@ -25,7 +25,7 @@ class AboutController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('admin/abouts/index', [
+        return Inertia::render('admin/about/index', [
             'abouts' => $abouts,
         ]);
     }
@@ -40,7 +40,7 @@ class AboutController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        return Inertia::render('admin/abouts/create');
+        return Inertia::render('admin/about/create');
     }
 
     /**
@@ -79,7 +79,7 @@ class AboutController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        return Inertia::render('admin/abouts/show', [
+        return Inertia::render('admin/about/show', [
             'about' => $about,
         ]);
     }
@@ -94,7 +94,7 @@ class AboutController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        return Inertia::render('admin/abouts/edit', [
+        return Inertia::render('admin/about/edit', [
             'about' => $about,
         ]);
     }

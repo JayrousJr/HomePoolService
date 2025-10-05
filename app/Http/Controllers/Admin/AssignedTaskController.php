@@ -23,11 +23,11 @@ class AssignedTaskController extends Controller
         $user = $request->user();
 
         // Build query - show assigned tasks with task relationship
-        $query = AssignedTask::with(['taskAssigned.serviceTask', 'taskAssigned.userTask']);
+        $query = AssignedTask::with(['task.service_request', 'task.technician']);
 
         if (!$user->isManager()) {
             // Technicians see only tasks assigned to them
-            $query->whereHas('taskAssigned', function ($q) use ($user) {
+            $query->whereHas('task', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             });
         }
@@ -37,8 +37,8 @@ class AssignedTaskController extends Controller
             ->withQueryString();
 
         return Inertia::render('admin/assigned-tasks/index', [
-            'assigned_tasks' => $assignedTasks,
-            'is_manager' => $user->isManager(),
+            'assignedTasks' => $assignedTasks,
+            'is_technician' => !$user->isManager(),
         ]);
     }
 
@@ -52,12 +52,11 @@ class AssignedTaskController extends Controller
 
         // Get tasks that are:
         // 1. Assigned to current user (for technicians)
-        // 2. Not yet completed (don't have an assigned_task record)
+        // 2. Not yet completed (don't have an assignedTask record)
         $query = Task::with('serviceTask')
             ->whereDoesntHave('assignedtasks');
 
-        if (!$user->isManager()) {
-            // Technicians only see their own tasks
+        if ($user->canPerformTask()) {
             $query->where('user_id', $user->id);
         }
 
@@ -156,15 +155,15 @@ class AssignedTaskController extends Controller
         $user = $request->user();
 
         // Load task relationship
-        $assignedTask->load(['taskAssigned.serviceTask', 'taskAssigned.userTask']);
+        $assignedTask->load(['task.service_request', 'task.technician']);
 
         // Technicians can only view their own assigned tasks
-        if (!$user->isManager() && $assignedTask->taskAssigned->user_id !== $user->id) {
+        if (!$user->isManager() && $assignedTask->task->user_id !== $user->id) {
             abort(403, 'Unauthorized action.');
         }
 
         return Inertia::render('admin/assigned-tasks/show', [
-            'assigned_task' => $assignedTask,
+            'assignedTask' => $assignedTask,
         ]);
     }
 
@@ -176,15 +175,15 @@ class AssignedTaskController extends Controller
         $user = $request->user();
 
         // Load task relationship
-        $assignedTask->load(['taskAssigned.serviceTask', 'taskAssigned.userTask']);
+        $assignedTask->load(['task.service_request', 'task.technician']);
 
         // Technicians can only edit their own assigned tasks
-        if (!$user->isManager() && $assignedTask->taskAssigned->user_id !== $user->id) {
+        if (!$user->isManager() && $assignedTask->task->user_id !== $user->id) {
             abort(403, 'Unauthorized action.');
         }
 
         return Inertia::render('admin/assigned-tasks/edit', [
-            'assigned_task' => $assignedTask,
+            'assignedTask' => $assignedTask,
         ]);
     }
 
@@ -195,13 +194,19 @@ class AssignedTaskController extends Controller
     {
         $user = $request->user();
 
+        // Load task relationship if not already loaded
+        if (!$assignedTask->relationLoaded('task')) {
+            $assignedTask->load('task');
+        }
+
         // Technicians can only update their own assigned tasks
-        if (!$user->isManager() && $assignedTask->taskAssigned->user_id !== $user->id) {
+        if (!$user->isManager() && $assignedTask->task->user_id !== $user->id) {
             abort(403, 'Unauthorized action.');
         }
 
         $validated = $request->validate([
-            'feedback' => 'required|string|max:5000',
+            'status' => 'required|string|in:pending,in_progress,completed,cancelled',
+            'feedback' => 'nullable|string|max:5000',
             'image_before' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'image_after' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
@@ -210,8 +215,31 @@ class AssignedTaskController extends Controller
             DB::beginTransaction();
 
             $updateData = [
+                'status' => $validated['status'],
                 'feedback' => $validated['feedback'],
             ];
+
+            // Update timestamps based on status changes
+            $oldStatus = $assignedTask->status;
+            $newStatus = $validated['status'];
+
+            // Set started_at when moving from pending to in_progress
+            if ($oldStatus === 'pending' && $newStatus === 'in_progress') {
+                $updateData['started_at'] = now();
+            }
+
+            // Set completed_at when moving to completed
+            if ($newStatus === 'completed' && $oldStatus !== 'completed') {
+                $updateData['completed_at'] = now();
+                if (!$assignedTask->started_at) {
+                    $updateData['started_at'] = now();
+                }
+            }
+
+            // Clear completed_at if moving away from completed
+            if ($oldStatus === 'completed' && $newStatus !== 'completed') {
+                $updateData['completed_at'] = null;
+            }
 
             // Handle image_before upload
             if ($request->hasFile('image_before')) {
@@ -219,7 +247,7 @@ class AssignedTaskController extends Controller
                 if ($assignedTask->image_before) {
                     Storage::disk('public')->delete($assignedTask->image_before);
                 }
-                $updateData['image_before'] = $request->file('image_before')->store('image_before', 'public');
+                $updateData['image_before'] = $request->file('image_before')->store('assigned_tasks/before', 'public');
             }
 
             // Handle image_after upload
@@ -228,21 +256,28 @@ class AssignedTaskController extends Controller
                 if ($assignedTask->image_after) {
                     Storage::disk('public')->delete($assignedTask->image_after);
                 }
-                $updateData['image_after'] = $request->file('image_after')->store('image_after', 'public');
+                $updateData['image_after'] = $request->file('image_after')->store('assigned_tasks/after', 'public');
             }
 
             $assignedTask->update($updateData);
 
+            // Also update the parent task status
+            if ($assignedTask->task) {
+                $assignedTask->task()->update([
+                    'status' => $validated['status'],
+                ]);
+            }
+
             DB::commit();
 
             return redirect()->route('admin.assigned-tasks.index')
-                ->with('success', 'Assigned task updated successfully.');
+                ->with('success', 'Task status updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Failed to update assigned task: ' . $e->getMessage());
+                ->with('error', 'Failed to update task: ' . $e->getMessage());
         }
     }
 

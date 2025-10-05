@@ -20,6 +20,7 @@ class Task extends Model
         'service_request_id',
         'user_id',
         'status',
+        'scheduled_date',
         'comments',
     ];
 
@@ -31,25 +32,36 @@ class Task extends Model
     protected function casts(): array
     {
         return [
-            'status' => 'boolean',
+            'scheduled_date' => 'date',
         ];
     }
 
     /**
      * Relationships
      */
-    public function serviceTask()
+    public function service_request()
     {
         return $this->belongsTo(ServiceRequest::class, 'service_request_id');
     }
 
-    public function userTask()
+    public function technician()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function assignedtasks()
+    public function assignedTasks()
     {
         return $this->hasMany(AssignedTask::class, 'task_id');
+    }
+
+    // Legacy relationship names for backward compatibility
+    public function serviceTask()
+    {
+        return $this->service_request();
+    }
+
+    public function userTask()
+    {
+        return $this->technician();
     }
 }

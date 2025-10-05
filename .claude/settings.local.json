@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/Projects/familyfarming_v2/**)",
+      "Read(//d/Projects/familypool-V2/**)",
+      "Bash(npm install:*)",
+      "Bash(php artisan:*)",
+      "Bash(icacls:*)",
+      "Bash(composer show:*)",
+      "Bash(tasklist)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)",
+      "Bash(npx shadcn@latest add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

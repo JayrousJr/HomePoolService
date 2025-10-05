@@ -23,6 +23,7 @@ class UserSeeder extends Seeder
             'city' => 'Los Angeles',
             'state' => 'California',
             'street' => '123 Main St',
+            'role' => "Administrator",
             'phone' => '+1234567890',
         ]);
         $admin->assignRole('Administrator');
@@ -37,6 +38,7 @@ class UserSeeder extends Seeder
             'city' => 'Los Angeles',
             'state' => 'California',
             'street' => '456 Oak Ave',
+            'role' => "Manager",
             'phone' => '+1234567891',
         ]);
         $manager->assignRole('Manager');
@@ -51,6 +53,7 @@ class UserSeeder extends Seeder
             'city' => 'Los Angeles',
             'state' => 'California',
             'street' => '789 Pine Rd',
+            'role' => "Technician",
             'phone' => '+1234567892',
         ]);
         $technician->assignRole('Technician');
@@ -65,6 +68,7 @@ class UserSeeder extends Seeder
             'city' => 'Los Angeles',
             'state' => 'California',
             'street' => '321 Elm St',
+            'role' => "User",
             'phone' => '+1234567893',
         ]);
         $user->assignRole('User');

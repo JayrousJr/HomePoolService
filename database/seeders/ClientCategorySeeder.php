@@ -13,13 +13,10 @@ class ClientCategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            'Residential',
-            'Commercial',
-            'Industrial',
-            'Municipal',
-            'Hotel/Resort',
-            'Apartment Complex',
-            'HOA Community',
+            'Weekly Service',
+            'Bi-WeeklyService',
+            'Monthly Service',
+            'Un Categorized',
         ];
 
         foreach ($categories as $category) {

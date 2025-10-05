@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('email');
+            $table->string('phone')->nullable();
             $table->string('subject');
             $table->string('message', 3000);
             $table->timestamps();

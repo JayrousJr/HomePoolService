@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobApplicant;
+use App\Models\ToggleJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,7 +17,11 @@ class JobApplicationController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('public/careers');
+        $toggelApplication = ToggleJob::first();
+
+        return Inertia::render('public/careers',[
+             'applicationWindow' => $toggelApplication,
+        ]);
     }
 
     /**

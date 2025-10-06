@@ -20,7 +20,7 @@ class CheckRole
             return redirect()->route('login');
         }
 
-        if (!$request->user()->hasAnyRole($roles)) {
+        if (!in_array($request->user()->roles()->pluck('name')[0],$roles)) {
             abort(403, 'Unauthorized access.');
         }
 

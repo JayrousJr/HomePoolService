@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 import { type CompanyInfo, type SocialNetwork } from '@/types/models';
 import { Link } from '@inertiajs/react';
 import {
@@ -12,8 +13,8 @@ import {
     MapPin,
     Phone,
     Twitter,
-    Waves,
 } from 'lucide-react';
+import AppLogoIcon from '../app-logo-icon';
 
 interface FooterProps {
     socialNetworks?: SocialNetwork[];
@@ -53,8 +54,12 @@ export default function Footer({
                     {/* Company Info */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                                <Waves className="h-6 w-6 text-primary-foreground" />
+                            <div
+                                className={cn(
+                                    'flex h-14 w-14 items-center justify-center rounded-lg transition-colors',
+                                )}
+                            >
+                                <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-lg leading-none font-bold">
@@ -101,6 +106,34 @@ export default function Footer({
                                     </Button>
                                 </a>
                             ))}
+                            <a
+                                href=""
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="transition-colors hover:bg-primary hover:text-primary-foreground"
+                                >
+                                    <Facebook className="h-4 w-4" />
+                                    <span className="sr-only">Facebook</span>
+                                </Button>
+                            </a>
+                            <a
+                                href=""
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="transition-colors hover:bg-primary hover:text-primary-foreground"
+                                >
+                                    <Instagram className="h-4 w-4" />
+                                    <span className="sr-only">Instagram</span>
+                                </Button>
+                            </a>
                         </div>
                     </div>
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Public\ServiceRequestController;
 use App\Http\Controllers\Public\MessageController;
 use App\Http\Controllers\Public\PagesController;
 use App\Http\Controllers\User\UserDashboardController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -35,6 +36,7 @@ Route::post('/careers/apply', [JobApplicationController::class, 'store'])->name(
  */
 Route::middleware(['auth', 'verified'])->group(function () {
     // User Dashboard
+
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
 
     // User's Messages
@@ -45,6 +47,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/myservices', [UserDashboardController::class, 'services'])->name('user.services.index');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
-require __DIR__.'/admin.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
+// require __DIR__.'/admin.php';

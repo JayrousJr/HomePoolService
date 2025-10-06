@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { Menu, Phone, Waves } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import AppLogoIcon from '../app-logo-icon';
 
 interface NavigationProps {
     currentPath?: string;
@@ -66,19 +67,11 @@ export default function Navigation({ currentPath = '/' }: NavigationProps) {
                         <div
                             className={cn(
                                 'flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
-                                isScrolled ? 'bg-primary' : 'bg-white/90',
                             )}
                         >
-                            <Waves
-                                className={cn(
-                                    'h-6 w-6 transition-colors',
-                                    isScrolled
-                                        ? 'text-primary-foreground'
-                                        : 'text-primary',
-                                )}
-                            />
+                           <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
                         </div>
-                        <div className="flex flex-col">
+                        {/* <div className="flex flex-col">
                             <span
                                 className={cn(
                                     'text-lg leading-none font-bold transition-colors',
@@ -99,7 +92,7 @@ export default function Navigation({ currentPath = '/' }: NavigationProps) {
                             >
                                 Professional Care
                             </span>
-                        </div>
+                        </div> */}
                     </Link>
 
                     {/* Desktop Navigation */}

@@ -21,6 +21,7 @@ import { useState } from 'react';
 
 interface JobApplicantsIndexProps {
     applicants: PaginatedData<JobApplicant>;
+    applicationWindow: any;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -52,10 +53,12 @@ const getStatusVariant = (
 
 export default function JobApplicantsIndex({
     applicants,
+    applicationWindow,
 }: JobApplicantsIndexProps) {
     const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
     const [selectedApplicant, setSelectedApplicant] =
         useState<JobApplicant | null>(null);
+    const [opeJobs, setOpeJobs] = useState(false);
 
     const { data, setData, post, processing, reset } = useForm({
         rejection_reason: '',
@@ -80,6 +83,18 @@ export default function JobApplicantsIndex({
                     reset();
                     setSelectedApplicant(null);
                 },
+            });
+        }
+    };
+
+    const handleApplicationClose = () => {
+        if (
+            confirm(
+                `Are tou sure you are ${applicationWindow.open ? 'Close Application Window?' : ' Open Application window for Technician to apply?'} `,
+            )
+        ) {
+            router.put(`/admin/toggle/${applicationWindow.id}`, {
+                data: applicationWindow.open,
             });
         }
     };
@@ -114,6 +129,14 @@ export default function JobApplicantsIndex({
                         <p className="text-muted-foreground">
                             Review and manage job applications
                         </p>
+                    </div>
+                    <div className="">
+                        <Button
+                            onClick={handleApplicationClose}
+                            className={`${applicationWindow.open}`}
+                        >
+                            {`${applicationWindow.open ? 'Close Application Window' : ' Open Applications'}`}
+                        </Button>
                     </div>
                 </div>
 

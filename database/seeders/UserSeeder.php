@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ToggleJob;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -58,19 +59,8 @@ class UserSeeder extends Seeder
         ]);
         $technician->assignRole('Technician');
 
-        // Create regular User
-        $user = User::create([
-            'name' => 'John Doe',
-            'email' => 'user@example.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'nationality' => 'United States',
-            'city' => 'Los Angeles',
-            'state' => 'California',
-            'street' => '321 Elm St',
-            'role' => "User",
-            'phone' => '+1234567893',
+        ToggleJob::create([
+            "open" => false
         ]);
-        $user->assignRole('User');
     }
 }

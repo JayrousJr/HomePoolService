@@ -8,6 +8,7 @@ use App\Mail\JobApplicationHired;
 use App\Mail\JobApplicationRejected;
 use App\Models\JobApplicant;
 use App\Models\Role;
+use App\Models\ToggleJob;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,9 +35,10 @@ class JobApplicantController extends Controller
         $applicants = JobApplicant::latest()
             ->paginate(10)
             ->withQueryString();
-
+        $toggelApplication = ToggleJob::first();
         return Inertia::render('admin/job-applicants/index', [
             'applicants' => $applicants,
+            'applicationWindow' => $toggelApplication,
         ]);
     }
 

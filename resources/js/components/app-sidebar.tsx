@@ -42,6 +42,7 @@ const adminNavItems: NavItem[] = [
         href: admin.dashboard(),
         icon: LayoutGrid,
     },
+     
     {
         title: 'Clients',
         href: admin.clients.index(),
@@ -123,6 +124,8 @@ export function AppSidebar() {
     const isAdmin = userRoles.some((role: any) =>
         ['Administrator', 'Manager', 'Technician'].includes(role),
     );
+    // const isTechnician = userRoles.some((role: any) => ['Technician'].includes(role));
+
     const isManager = userRoles.some((role: any) =>
         ['Administrator', 'Manager'].includes(role),
     );
@@ -142,6 +145,7 @@ export function AppSidebar() {
             'Settings',
         ];
 
+
         if (managerOnlyItems.includes(item.title)) {
             return isManager;
         }
@@ -154,7 +158,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href="/" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -163,7 +167,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                {!isManager && <NavMain items={mainNavItems} />}
                 {isAdmin && <NavMain items={filteredAdminNavItems} />}
             </SidebarContent>
 

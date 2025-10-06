@@ -16,8 +16,8 @@ class UserSeeder extends Seeder
     {
         // Create Administrator
         $admin = User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@homepoolservice.com',
+            'name' => 'Joshua Jayrous',
+            'email' => 'joshuajayrous@gmail.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'nationality' => 'United States',
@@ -31,16 +31,16 @@ class UserSeeder extends Seeder
 
         // Create Manager
         $manager = User::create([
-            'name' => 'Manager',
-            'email' => 'manager@homepoolservice.com',
+            'name' => 'Amani Joel',
+            'email' => 'amanijoel1985@gmail.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'nationality' => 'United States',
-            'city' => 'Los Angeles',
-            'state' => 'California',
-            'street' => '456 Oak Ave',
+            'city' => 'Memphis',
+            'state' => 'Tenessee',
+            'street' => '3529 Tall Oaks Circle Apt 5',
             'role' => "Manager",
-            'phone' => '+1234567891',
+            'phone' => '+1 901 297 7812',
         ]);
         $manager->assignRole('Manager');
 

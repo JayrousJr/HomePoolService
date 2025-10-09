@@ -201,8 +201,8 @@ export default function Footer({
                                 <div className="flex gap-3 text-sm">
                                     <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                                     <span className="text-muted-foreground">
-                                        3529 Tall Oaks Circle Apt 5, Memphis -
-                                        TN
+                                        2814 TREASURE ISLAND DR E. 38115
+                                        Memphis, Tennessee
                                     </span>
                                 </div>
                                 <a

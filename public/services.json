@@ -1,0 +1,128 @@
+[
+    {
+        "id": 1,
+        "slug": "pool-maintenance",
+        "title": "Pool Maintenance",
+        "icon": "Wrench",
+        "description": "We do pool repairs, pool cleaning, pump and water circulation check to prevent bacteria and algae growth",
+        "features": [
+            "Pool repairs and inspections",
+            "Regular pool cleaning",
+            "Pump and water circulation check",
+            "Bacteria and algae prevention",
+            "Equipment maintenance",
+            "Filter cleaning and replacement",
+            "Skimmer and basket cleaning",
+            "Vacuum and brush pool surfaces"
+        ],
+        "pricing": "Starting at $99/month"
+    },
+    {
+        "id": 2,
+        "slug": "pool-repair",
+        "title": "Pool Repair",
+        "icon": "Wrench",
+        "description": "Professional pool repair services for all types of pool issues and equipment failures",
+        "features": [
+            "Leak detection and repair",
+            "Pump repair and replacement",
+            "Filter system repairs",
+            "Heater repair and maintenance",
+            "Pool surface repairs",
+            "Tile and coping repair",
+            "Plumbing repairs",
+            "Electrical system repairs"
+        ],
+        "pricing": "Custom quotes"
+    },
+    {
+        "id": 3,
+        "slug": "chemical-balancing",
+        "title": "Chemical Balancing",
+        "icon": "TestTube",
+        "description": "We do chemical balancing, involves us handling all chemicals including Chlorine and all that your pool may need are balanced",
+        "features": [
+            "Chlorine level management",
+            "pH balance testing and adjustment",
+            "Alkalinity control",
+            "Calcium hardness management",
+            "Water quality monitoring",
+            "Safe swimming water maintenance",
+            "Algae prevention treatment",
+            "Shock treatment when needed"
+        ],
+        "pricing": "Included with service"
+    },
+    {
+        "id": 4,
+        "slug": "pool-equipment-sale-installation",
+        "title": "Pool Equipment Sale and Installation",
+        "icon": "ShoppingCart",
+        "description": "We sell and install the best quality pool equipment including pumps, filters, heaters, and automation systems",
+        "features": [
+            "High-quality pool pumps",
+            "Filter systems (sand, cartridge, DE)",
+            "Pool heaters (gas, electric, solar)",
+            "Automation and control systems",
+            "LED pool lighting",
+            "Saltwater chlorinators",
+            "Professional installation",
+            "Warranty and support"
+        ],
+        "pricing": "Competitive prices"
+    },
+    {
+        "id": 5,
+        "slug": "chemical-sales",
+        "title": "Chemical Sales",
+        "icon": "TestTube",
+        "description": "We sell the best quality pool chemicals at affordable and reasonable prices, you do not need to go far",
+        "features": [
+            "Chlorine tablets and liquid",
+            "pH increasers and decreasers",
+            "Alkalinity adjusters",
+            "Calcium hardness products",
+            "Algaecides and clarifiers",
+            "Shock treatments",
+            "Test kits and strips",
+            "Pool opening/closing chemicals"
+        ],
+        "pricing": "Affordable rates"
+    },
+    {
+        "id": 6,
+        "slug": "pool-closing-winterizing",
+        "title": "Pool Closing and Winterizing",
+        "icon": "Calendar",
+        "description": "Complete pool winterization service to protect your pool during the off-season and ensure easy spring opening",
+        "features": [
+            "Water chemistry balance",
+            "System draining and blowout",
+            "Equipment winterization",
+            "Winter cover installation",
+            "Antifreeze application",
+            "Skimmer and return protection",
+            "Pump and filter winterization",
+            "Spring opening preparation"
+        ],
+        "pricing": "Seasonal rates"
+    },
+    {
+        "id": 7,
+        "slug": "pool-opening",
+        "title": "Pool Opening",
+        "icon": "Droplets",
+        "description": "Ladder and lights installation, pump and heater starting, pool brushing and shock treatment",
+        "features": [
+            "Winter cover removal and cleaning",
+            "Ladder and rail installation",
+            "Pool lights installation and testing",
+            "Pump and heater startup",
+            "Filter system startup",
+            "Pool brushing and vacuuming",
+            "Shock treatment",
+            "Water chemistry balancing"
+        ],
+        "pricing": "One-time fee"
+    }
+]

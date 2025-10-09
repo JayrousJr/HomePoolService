@@ -14,10 +14,12 @@ import {
     ArrowRight,
     CheckCircle2,
     Calendar,
-    ShoppingCart
+    ShoppingCart,
+    type LucideIcon
 } from 'lucide-react';
 import { service as serviceImage } from '@/lib/exports';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 interface ServiceProps {
     abouts?: About[];
@@ -26,87 +28,34 @@ interface ServiceProps {
     popups?: PopUp[];
 }
 
+interface ServiceData {
+    id: number;
+    slug: string;
+    title: string;
+    icon: string;
+    description: string;
+    features: string[];
+    pricing: string;
+}
+
+const iconMap: Record<string, LucideIcon> = {
+    Wrench,
+    TestTube,
+    Droplets,
+    ShoppingCart,
+    Calendar,
+    ShieldCheck,
+};
+
 export default function Service({ abouts = [], socialnetwork = [], infos = [], popups = [] }: ServiceProps) {
-    const services = [
-        {
-            icon: Wrench,
-            title: 'Pool Maintenance',
-            description: 'We do pool repairs, pool cleaning, pump and water circulation check to prevent bacteria and algae growth',
-            features: [
-                'Pool repairs and inspections',
-                'Regular pool cleaning',
-                'Pump and water circulation check',
-                'Bacteria and algae prevention',
-                'Equipment maintenance',
-            ],
-            pricing: 'Starting at $99/month',
-        },
-        {
-            icon: TestTube,
-            title: 'Chemical Balancing',
-            description: 'We do chemical balancing, involves us handling all chemicals including Chlorine and all that your pool may need are balanced',
-            features: [
-                'Chlorine level management',
-                'pH balance testing',
-                'Chemical adjustment',
-                'Water quality monitoring',
-                'Safe swimming water',
-            ],
-            pricing: 'Included with service',
-        },
-        {
-            icon: ShoppingCart,
-            title: 'Pool Equipment Sales',
-            description: 'We sell the best quality pool equipments and chemicals in an affordable and reasonable price, you do not need to go far.',
-            features: [
-                'Quality pool equipment',
-                'Pool chemicals and supplies',
-                'Affordable pricing',
-                'Expert recommendations',
-                'Delivery available',
-            ],
-            pricing: 'Competitive prices',
-        },
-        {
-            icon: Droplets,
-            title: 'Pool Opening',
-            description: 'Ladder and lights installation, pump and heater starting, pool brushing and shock treatment',
-            features: [
-                'Ladder installation',
-                'Lights installation',
-                'Pump and heater starting',
-                'Pool brushing',
-                'Shock treatment',
-            ],
-            pricing: 'One-time fee',
-        },
-        {
-            icon: Calendar,
-            title: 'Free Estimation',
-            description: 'Experties in pool cost estimation, pool equipment and chemicals cost estimations. Advices about how to get the better pool as you wish.',
-            features: [
-                'Pool cost estimation',
-                'Equipment cost analysis',
-                'Chemical requirement planning',
-                'Expert advice',
-                'Customized recommendations',
-            ],
-            pricing: 'Free',
-        },
-        {
-            icon: ShieldCheck,
-            title: 'Pool Construction',
-            description: 'High quality service for pool constructions for all sizes according to your needs',
-            features: [
-                'Commercial pool construction',
-                'Residential pool installation',
-                'Custom pool designs',
-                'All size pools',
-                'Complete installation service',
-            ],
-            pricing: 'Custom quotes',
-        },
-    ];
+    const [services, setServices] = useState<ServiceData[]>([]);
+
+    useEffect(() => {
+        fetch('/services.json')
+            .then(response => response.json())
+            .then(data => setServices(data))
+            .catch(error => console.error('Error loading services:', error));
+    }, []);
 
     const benefits = [
         {
@@ -218,38 +167,41 @@ export default function Service({ abouts = [], socialnetwork = [], infos = [], p
                         </p>
                     </motion.div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-                        {services.map((service, index) => (
-                            <motion.div
-                                key={service.title}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                            >
-                                <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 flex flex-col h-full">
-                                    <CardHeader>
-                                        <div className="flex items-start justify-between mb-4">
-                                            <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
-                                                <service.icon className="h-6 w-6 text-primary group-hover:text-primary-foreground" />
+                        {services.map((service, index) => {
+                            const IconComponent = iconMap[service.icon] || Wrench;
+                            return (
+                                <motion.div
+                                    key={service.id}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                                >
+                                    <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 flex flex-col h-full">
+                                        <CardHeader>
+                                            <div className="flex items-start justify-between mb-4">
+                                                <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
+                                                    <IconComponent className="h-6 w-6 text-primary group-hover:text-primary-foreground" />
+                                                </div>
+                                                <Badge variant="outline">{service.pricing}</Badge>
                                             </div>
-                                            <Badge variant="outline">{service.pricing}</Badge>
-                                        </div>
-                                        <CardTitle className="text-xl">{service.title}</CardTitle>
-                                        <CardDescription>{service.description}</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="flex-1">
-                                        <ul className="space-y-2">
-                                            {service.features.map((feature) => (
-                                                <li key={feature} className="flex items-start gap-2 text-sm">
-                                                    <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                                    <span className="text-muted-foreground">{feature}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        ))}
+                                            <CardTitle className="text-xl">{service.title}</CardTitle>
+                                            <CardDescription>{service.description}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="flex-1">
+                                            <ul className="space-y-2">
+                                                {service.features.map((feature, idx) => (
+                                                    <li key={idx} className="flex items-start gap-2 text-sm">
+                                                        <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                                        <span className="text-muted-foreground">{feature}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </CardContent>
+                                    </Card>
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 </div>
             </section>

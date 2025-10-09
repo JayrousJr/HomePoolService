@@ -14,12 +14,16 @@ import { motion } from 'framer-motion';
 import {
     ArrowRight,
     Award,
+    Calendar,
     Clock,
     Droplets,
     Shield,
+    ShieldCheck,
+    ShoppingCart,
     Sparkles,
     TestTube,
     Wrench,
+    type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -30,6 +34,25 @@ interface HomeProps {
     popups: PopUp[];
 }
 
+interface ServiceData {
+    id: number;
+    slug: string;
+    title: string;
+    icon: string;
+    description: string;
+    features: string[];
+    pricing: string;
+}
+
+const iconMap: Record<string, LucideIcon> = {
+    Wrench,
+    TestTube,
+    Droplets,
+    ShoppingCart,
+    Calendar,
+    ShieldCheck,
+};
+
 export default function Home({
     abouts,
     socialnetwork,
@@ -37,6 +60,7 @@ export default function Home({
     popups,
 }: HomeProps) {
     const [typewriterText, setTypewriterText] = useState('');
+    const [services, setServices] = useState<ServiceData[]>([]);
     const fullText = 'Professional Pool Services You Can Trust.';
 
     useEffect(() => {
@@ -51,6 +75,13 @@ export default function Home({
         }, 80);
 
         return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        fetch('/services.json')
+            .then((response) => response.json())
+            .then((data) => setServices(data))
+            .catch((error) => console.error('Error loading services:', error));
     }, []);
     const features = [
         {
@@ -187,53 +218,38 @@ export default function Home({
                         </p>
                     </motion.div>
                     <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-                        {[
-                            {
-                                icon: Wrench,
-                                title: 'Pool Maintenance',
-                                description:
-                                    'We do pool repairs, pool cleaning, pump and water circulation check to prevent bacteria and algae growth',
-                            },
-                            {
-                                icon: TestTube,
-                                title: 'Chemical Balancing',
-                                description:
-                                    'We do chemical balancing, involves us handling all chemicals including Chlorine and all that your pool may need are balanced',
-                            },
-                            {
-                                icon: Droplets,
-                                title: 'Pool Opening',
-                                description:
-                                    'Ladder and lights installation, pump and heater starting, pool brushing and shock treatment',
-                            },
-                        ].map((service, index) => (
-                            <motion.div
-                                key={service.title}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{
-                                    duration: 0.5,
-                                    delay: index * 0.1,
-                                }}
-                            >
-                                <Card className="group h-full border-2 transition-all duration-300 hover:border-primary/50 hover:shadow-xl">
-                                    <CardContent className="pt-6">
-                                        <div className="flex flex-col items-center space-y-4 text-center">
-                                            <div className="rounded-lg bg-primary/10 p-4 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary">
-                                                <service.icon className="h-8 w-8 text-primary group-hover:text-primary-foreground" />
+                        {services.slice(0, 3).map((service, index) => {
+                            const IconComponent =
+                                iconMap[service.icon] || Wrench;
+                            return (
+                                <motion.div
+                                    key={service.id}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{
+                                        duration: 0.5,
+                                        delay: index * 0.1,
+                                    }}
+                                >
+                                    <Card className="group h-full border-2 transition-all duration-300 hover:border-primary/50 hover:shadow-xl">
+                                        <CardContent className="pt-6">
+                                            <div className="flex flex-col items-center space-y-4 text-center">
+                                                <div className="rounded-lg bg-primary/10 p-4 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary">
+                                                    <IconComponent className="h-8 w-8 text-primary group-hover:text-primary-foreground" />
+                                                </div>
+                                                <h3 className="text-xl font-semibold">
+                                                    {service.title}
+                                                </h3>
+                                                <p className="text-sm leading-relaxed text-muted-foreground">
+                                                    {service.description}
+                                                </p>
                                             </div>
-                                            <h3 className="text-xl font-semibold">
-                                                {service.title}
-                                            </h3>
-                                            <p className="text-sm leading-relaxed text-muted-foreground">
-                                                {service.description}
-                                            </p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        ))}
+                                        </CardContent>
+                                    </Card>
+                                </motion.div>
+                            );
+                        })}
                     </div>
                     <div className="text-center">
                         <Link href="/service">
@@ -417,7 +433,7 @@ export default function Home({
                     <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 md:grid-cols-4">
                         {[
                             { value: '500+', label: 'Pools Serviced' },
-                            { value: '15+', label: 'Years Experience' },
+                            { value: '10+', label: 'Years Experience' },
                             { value: '98%', label: 'Client Satisfaction' },
                             { value: '24/7', label: 'Emergency Service' },
                         ].map((stat, index) => (

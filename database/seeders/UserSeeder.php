@@ -30,9 +30,9 @@ class UserSeeder extends Seeder
         $admin->assignRole('Administrator');
 
         // Create Manager
-        $manager = User::create([
+        $amani = User::create([
             'name' => 'Amani Joel',
-            'email' => 'amanijoel1985@gmail.com',
+            'email' => 'amanijoel@homepool.org',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'nationality' => 'United States',
@@ -40,24 +40,24 @@ class UserSeeder extends Seeder
             'state' => 'Tenessee',
             'street' => '3529 Tall Oaks Circle Apt 5',
             'role' => "Manager",
-            'phone' => '+1 901 297 7812',
+            'phone' => '+1 (901) 297-7812',
         ]);
-        $manager->assignRole('Manager');
+        $amani->assignRole('Manager');
 
         // Create Technician
-        $technician = User::create([
-            'name' => 'Technician',
-            'email' => 'technician@homepoolservice.com',
+        $wailes = User::create([
+            'name' => 'Wales Niyukuri',
+            'email' => 'wailesniyukuri@homepool.org',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'nationality' => 'United States',
-            'city' => 'Los Angeles',
+            'city' => 'Memphis',
             'state' => 'California',
-            'street' => '789 Pine Rd',
-            'role' => "Technician",
-            'phone' => '+1234567892',
+            'street' => 'Tenessee',
+            'role' => "Manager",
+            'phone' => '+1 (662) 278-8148',
         ]);
-        $technician->assignRole('Technician');
+        $wailes->assignRole('Manager');
 
         ToggleJob::create([
             "open" => false

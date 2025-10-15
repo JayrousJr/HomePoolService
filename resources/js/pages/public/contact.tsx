@@ -82,7 +82,7 @@ export default function Contact({
         {
             icon: Clock,
             label: 'Business Hours',
-            value: 'Mon-Fri: 8AM-6PM, Sat: 9AM-4PM',
+            value: 'Mon-Fri: 8am-6pm, Sat: 8am-4pm',
             link: null,
         },
     ];

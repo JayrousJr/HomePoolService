@@ -93,7 +93,7 @@ export default function UserShow({ user }: UserShowProps) {
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
                         <Button
                             variant="outline"
                             size="sm"

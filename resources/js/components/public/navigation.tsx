@@ -66,10 +66,10 @@ export default function Navigation({ currentPath = '/' }: NavigationProps) {
                     >
                         <div
                             className={cn(
-                                'flex h-12 w-12 items-center justify-center rounded-lg transition-colors',
+                                'flex h-14 w-14 items-center justify-center rounded-lg transition-colors',
                             )}
                         >
-                            <AppLogoIcon className="size-10 fill-current text-[var(--foreground)] dark:text-white" />
+                            <AppLogoIcon className="size-14 fill-current text-[var(--foreground)] dark:text-white" />
                         </div>
                         {/* <div className="flex flex-col">
                             <span

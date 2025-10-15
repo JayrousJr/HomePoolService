@@ -90,7 +90,7 @@ export default function UserShow({ user }: UserShowProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`User: ${user.name}`} />
-            <div className="flex h-full flex-1 flex-col flex-wrap gap-6 overflow-x-auto rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -113,7 +113,7 @@ export default function UserShow({ user }: UserShowProps) {
                             </p>
                         </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         {user.active ? (
                             <Button
                                 variant="outline"

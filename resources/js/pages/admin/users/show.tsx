@@ -93,7 +93,7 @@ export default function UserShow({ user }: UserShowProps) {
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center gap-4 max-sm:flex-col">
                         <Button
                             variant="outline"
                             size="sm"
@@ -113,7 +113,7 @@ export default function UserShow({ user }: UserShowProps) {
                             </p>
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex gap-2 max-sm:flex-col">
                         {user.active ? (
                             <Button
                                 variant="outline"

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ServiceReply;
+use App\Mail\ServiceSent;
 use App\Models\ServiceRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ServiceRequestController extends Controller
 {
@@ -41,8 +44,8 @@ class ServiceRequestController extends Controller
             ]);
 
             // TODO: Send emails
-            // Mail::to('familypoolservice2020@gmail.com')->send(new ServiceSent($serviceRequest));
-            // Mail::to($validated['email'])->send(new ServiceReply($serviceRequest));
+            Mail::to(config('mail.from.address', 'customerservices@homepool.org'))->send(new ServiceSent($serviceRequest));
+            Mail::to($validated['email'])->send(new ServiceReply($serviceRequest));
 
             DB::commit();
 

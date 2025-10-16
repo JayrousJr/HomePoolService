@@ -7,6 +7,7 @@ use App\Models\JobApplicant;
 use App\Models\ToggleJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -62,6 +63,7 @@ class JobApplicationController extends Controller
         try {
             JobApplicant::create($validated);
 
+            
             return redirect()->back()
                 ->with('success', 'Your application has been submitted successfully! We will review it and get back to you soon.');
         } catch (\Exception $e) {

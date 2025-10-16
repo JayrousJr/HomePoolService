@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\VisitorController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PdfController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\EmailBlastController;
 use App\Http\Controllers\ToggleJobController;
 use Illuminate\Support\Facades\Route;
 
@@ -174,6 +175,16 @@ Route::middleware(['auth', 'verified', 'role:Administrator,Manager,Technician', 
                 'update' => 'admin.about.update',
                 'destroy' => 'admin.about.destroy',
             ]);
+
+            // Email Blasts
+            Route::resource('email-blasts', EmailBlastController::class)->except(['edit', 'update'])->names([
+                'index' => 'admin.email-blasts.index',
+                'create' => 'admin.email-blasts.create',
+                'store' => 'admin.email-blasts.store',
+                'show' => 'admin.email-blasts.show',
+                'destroy' => 'admin.email-blasts.destroy',
+            ]);
+
             // Admin Dashboard (accessible to all admin roles)
             // User Management
             Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');

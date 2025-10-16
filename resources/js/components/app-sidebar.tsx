@@ -78,6 +78,11 @@ const adminNavItems: NavItem[] = [
         href: admin.users.index(),
         icon: UserCog,
     },
+    {
+        title: 'Email Blast',
+        href: admin.emailBlasts.index(),
+        icon: Mail,
+    },
     // {
     //     title: 'Visitors',
     //     href: admin.visitors.index(),
@@ -141,6 +146,7 @@ export function AppSidebar() {
             'Messages',
             'Job Applicants',
             'User Management',
+            'Email Blast',
             'Visitors',
             'Settings',
         ];

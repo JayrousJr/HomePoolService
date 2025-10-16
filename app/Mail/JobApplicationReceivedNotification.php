@@ -2,26 +2,25 @@
 
 namespace App\Mail;
 
+use App\Models\JobApplicant;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class EmailBlastMail extends Mailable
+class JobApplicationReceivedNotification extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public string $emailSubject;
-    public string $messageContent;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(string $subject, string $messageContent)
+    public function __construct(public JobApplicant $user)
     {
-        $this->emailSubject = $subject;
-        $this->messageContent = $messageContent;
+        $this->user = $user;
     }
 
     /**
@@ -30,7 +29,7 @@ class EmailBlastMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->emailSubject,
+            subject: 'Job Application Received Notification',
         );
     }
 
@@ -40,7 +39,17 @@ class EmailBlastMail extends Mailable
     public function content(): Content
     {
         return new Content(
-             markdown: 'mail.blast-email',
+            markdown: 'mail.jobapplication.received',
         );
+    }
+
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array
+    {
+        return [];
     }
 }

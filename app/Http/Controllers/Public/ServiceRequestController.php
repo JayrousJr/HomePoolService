@@ -33,7 +33,7 @@ class ServiceRequestController extends Controller
 
         try {
             // Create service request
-            ServiceRequest::create([
+            $serviceRequest = ServiceRequest::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'zip' => $validated['zip'],
@@ -43,9 +43,12 @@ class ServiceRequestController extends Controller
                 'assigned' => false,
             ]);
 
-            // TODO: Send emails
-            Mail::to(config('mail.from.address', 'customerservices@homepool.org'))->send(new ServiceSent($serviceRequest));
-            Mail::to($validated['email'])->send(new ServiceReply($serviceRequest));
+            // Send notification emails
+            Mail::to(config('mail.from.address', 'customerservices@homepool.org'))
+                ->send(new ServiceSent($serviceRequest));
+
+            Mail::to($validated['email'])
+                ->send(new ServiceReply($serviceRequest));
 
             DB::commit();
 

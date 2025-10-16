@@ -1,11 +1,29 @@
 <x-mail::message>
-# Introduction
+# New Service Request Received
 
-The body of your message.
+A new service request has been submitted by **{{ $serviceRequest->name }}**.
 
-<x-mail::button :url="''">
-Button Text
+## Request Details:
+
+**Name:** {{ $serviceRequest->name }}  
+**Email:** {{ $serviceRequest->email }}  
+**Phone:** {{ $serviceRequest->phone }}  
+**ZIP Code:** {{ $serviceRequest->zip }}  
+**Service:** {{ $serviceRequest->service }}
+
+## Description:
+
+{{ $serviceRequest->description }}
+
+---
+
+**Submitted:** {{ $serviceRequest->created_at->format('F d, Y \a\t h:i A') }}
+
+<x-mail::button :url="config('app.url') . '/admin/service-requests/' . $serviceRequest->id">
+View Request
 </x-mail::button>
+
+Please respond to this request as soon as possible.
 
 Thanks,<br>
 {{ config('app.name') }}

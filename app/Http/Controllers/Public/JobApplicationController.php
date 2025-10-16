@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Mail\JobApplicationReceivedNotification;
+use App\Mail\ServiceSent;
 use App\Models\JobApplicant;
 use App\Models\ToggleJob;
 use Illuminate\Http\RedirectResponse;
@@ -61,7 +63,10 @@ class JobApplicationController extends Controller
         ]);
 
         try {
-            JobApplicant::create($validated);
+                $user =  JobApplicant::create($validated);
+
+                Mail::to(config('mail.from.address', 'customerservices@homepool.org'))
+                ->send(new JobApplicationReceivedNotification($user));
 
             
             return redirect()->back()

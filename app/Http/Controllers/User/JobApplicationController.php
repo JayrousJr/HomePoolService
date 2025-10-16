@@ -149,7 +149,7 @@ class JobApplicationController extends Controller
             ]);
 
             // TODO: Send emails
-            // Mail::to('familypoolservice2020@gmail.com')->send(new JobSent($application));
+            // Mail::to('Homepoolservice2020@gmail.com')->send(new JobSent($application));
             // Mail::to($validated['email'])->send(new JobReceived($application));
 
             DB::commit();

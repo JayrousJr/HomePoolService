@@ -1,4 +1,4 @@
-# COMPREHENSIVE SYSTEM ANALYSIS - FAMILY POOL SERVICE V2
+# COMPREHENSIVE SYSTEM ANALYSIS - Home POOL SERVICE V2
 
 ## EXECUTIVE SUMMARY
 This Laravel application is a pool service management system built with **Filament v3** admin panel, **Laravel Jetstream**, and **Spatie Laravel Permission** for role-based access control. The system manages clients, service requests, task assignments, job applications, messages, and company information with visitor tracking capabilities.
@@ -470,7 +470,7 @@ GET /api/user                   - Get authenticated user (Sanctum)
 ## 4. CONTROLLERS & BUSINESS LOGIC
 
 ### **ServiceRequestController**
-**Location:** `/home/kingsman/Projects/familypool-V2/app/Http/Controllers/ServiceRequestController.php`
+**Location:** `/home/kingsman/Projects/Homepool-V2/app/Http/Controllers/ServiceRequestController.php`
 
 **Purpose:** Handle service request submissions from website
 
@@ -487,7 +487,7 @@ Validation:
 Process:
 1. Validate request data
 2. Create ServiceRequest record
-3. Send email to company (familypoolservice2020@gmail.com)
+3. Send email to company (Homepoolservice2020@gmail.com)
    - ServiceSent mail class
 4. Send confirmation email to customer
    - ServiceReply mail class
@@ -498,7 +498,7 @@ Database Transaction: Yes (using DB::beginTransaction/commit)
 ```
 
 ### **MessageController**
-**Location:** `/home/kingsman/Projects/familypool-V2/app/Http/Controllers/MessageController.php`
+**Location:** `/home/kingsman/Projects/Homepool-V2/app/Http/Controllers/MessageController.php`
 
 **Key Method: `message(Request $request)`**
 ```php
@@ -520,7 +520,7 @@ Error Handling: Try-catch with DB rollback
 ```
 
 ### **JobApplicantsController**
-**Location:** `/home/kingsman/Projects/familypool-V2/app/Http/Controllers/JobApplicantsController.php`
+**Location:** `/home/kingsman/Projects/Homepool-V2/app/Http/Controllers/JobApplicantsController.php`
 
 **Key Method: `apply_job(Request $request)`**
 ```php
@@ -554,7 +554,7 @@ Special Features:
 ```
 
 ### **PagesController**
-**Location:** `/home/kingsman/Projects/familypool-V2/app/Http/Controllers/PagesController.php`
+**Location:** `/home/kingsman/Projects/Homepool-V2/app/Http/Controllers/PagesController.php`
 
 **Purpose:** Render public-facing pages with common data
 
@@ -626,7 +626,7 @@ Methods:
 ## 5. FILAMENT ADMIN PANEL
 
 ### Panel Configuration
-**Location:** `/home/kingsman/Projects/familypool-V2/app/Providers/Filament/AdminPanelProvider.php`
+**Location:** `/home/kingsman/Projects/Homepool-V2/app/Providers/Filament/AdminPanelProvider.php`
 
 ```php
 Panel Settings:
@@ -926,7 +926,7 @@ return Pdf::loadView('/site/pdf/customer', ['record' => $record])
 ## 7. EMAIL SYSTEM
 
 ### Mail Classes
-**Location:** `/home/kingsman/Projects/familypool-V2/app/Mail/`
+**Location:** `/home/kingsman/Projects/Homepool-V2/app/Mail/`
 
 #### **Service Request Emails:**
 1. **ServiceSent** - Sent to company when service requested
@@ -943,7 +943,7 @@ return Pdf::loadView('/site/pdf/customer', ['record' => $record])
 #### **Admin Email:**
 1. **CustomerEmailReply** - Admin reply to customer messages
 
-**Company Email Address:** familypoolservice2020@gmail.com
+**Company Email Address:** Homepoolservice2020@gmail.com
 
 ---
 
@@ -952,7 +952,7 @@ return Pdf::loadView('/site/pdf/customer', ['record' => $record])
 ### Jobs
 
 #### **MarkTaskOverdue**
-**Location:** `/home/kingsman/Projects/familypool-V2/app/Jobs/MarkTaskOverdue.php`
+**Location:** `/home/kingsman/Projects/Homepool-V2/app/Jobs/MarkTaskOverdue.php`
 
 ```php
 Purpose: Automatically mark tasks as overdue
@@ -978,7 +978,7 @@ $this->task->where("comments", "Not Performed")->update(["comments" => "Overdue"
 
 ## 9. MIDDLEWARE
 
-**Location:** `/home/kingsman/Projects/familypool-V2/app/Http/Middleware/`
+**Location:** `/home/kingsman/Projects/Homepool-V2/app/Http/Middleware/`
 
 ### Custom Middleware:
 1. **CheckServiceApplication** - Custom middleware (specific implementation not examined)
@@ -1311,7 +1311,7 @@ Password: password (hashed)
 ## 16. VIEW STRUCTURE
 
 ### Public Site Views
-**Location:** `/home/kingsman/Projects/familypool-V2/resources/views/site/`
+**Location:** `/home/kingsman/Projects/Homepool-V2/resources/views/site/`
 
 - **index.blade.php** - Homepage
 - **service.blade.php** - Services page
@@ -1413,7 +1413,7 @@ Print Reports:
 ## 19. CONFIGURATION NOTES
 
 ### Email Configuration
-- Company email: familypoolservice2020@gmail.com
+- Company email: Homepoolservice2020@gmail.com
 - All notifications sent to this address
 - Customer confirmations sent from this address
 
@@ -1489,7 +1489,7 @@ This is a comprehensive pool service management system with the following streng
 - Email system remains backend (unchanged)
 - PDF generation remains backend (unchanged)
 
-All file paths referenced in this document are absolute paths from `/home/kingsman/Projects/familypool-V2/`
+All file paths referenced in this document are absolute paths from `/home/kingsman/Projects/Homepool-V2/`
 
 
 Registration failed: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'SH027' for key 'locations_code_unique' (Connection: mysql, SQL: insert into `locations` (`name`, `code`, `type`, `description`, `address`, `is_active`, `is_default`, `created_by`, `id`, `updated_at`, `created_at`) values (Paula Mcbride, SH027, shop, Shop location for Paula Mcbride, {"street":"","city":"","country":"","district":""}, 1, 1, a00a394c-df14-4475-acb2-4459b400d7ce, a00a394c-e091-4d30-9894-75354b604e48, 2025-10-05 09:48:34, 2025-10-05 09:48:34))

@@ -35,7 +35,7 @@ class MessageController extends Controller
             ]);
 
             // TODO: Send emails
-            // Mail::to('familypoolservice2020@gmail.com')->send(new MessageSent($message));
+            // Mail::to('Homepoolservice2020@gmail.com')->send(new MessageSent($message));
             // Mail::to($validated['email'])->send(new MessageReceived($message));
 
             return redirect()->back()

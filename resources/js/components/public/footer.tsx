@@ -214,6 +214,15 @@ export default function Footer({
                                         +1 901 297 7812
                                     </span>
                                 </a>
+                                <a
+                                    href="tel:+16622788148"
+                                    className="group flex gap-3 text-sm transition-colors hover:text-primary"
+                                >
+                                    <Phone className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                                    <span className="text-muted-foreground group-hover:text-foreground">
+                                        +1 662 278 8148
+                                    </span>
+                                </a>
                                 <Link href="/contact">
                                     <Button
                                         variant="outline"
